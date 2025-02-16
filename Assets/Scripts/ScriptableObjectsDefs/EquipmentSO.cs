@@ -7,5 +7,6 @@ public class EquipmentSO : ScriptableObject
     public string _name;
     public string _description;
     public List<StatModifier> _statModifier = new List<StatModifier>();
+    public WeaponDamageType _weaponDamageType;
     public SkillSO _basicSkill;
 }

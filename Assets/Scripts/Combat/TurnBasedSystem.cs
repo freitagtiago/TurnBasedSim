@@ -297,6 +297,8 @@ public class TurnBasedSystem : MonoBehaviour
     public void ApplySkillOnTarget(Character target)
     {
         _battleUI.CloseTargetPanel();
+        GetCurrentActor().ReduceSP(_selectedSkill._cost);
+        UpdateCharacterSlotUI();
         string message = CalculateAndApplyDamage(target);
         _selectedSkill = null;
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
@@ -306,8 +308,10 @@ public class TurnBasedSystem : MonoBehaviour
     {
         _battleUI.CloseTargetPanel();
         string message = $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em todos";
-        _selectedSkill = null;
 
+        CalculateAndApplyDamage(null);
+
+        _selectedSkill = null;
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
 
@@ -315,6 +319,22 @@ public class TurnBasedSystem : MonoBehaviour
     {
         _battleUI.CloseTargetPanel();
         string message = $"{GetCurrentActor()._name} usou item {_selectedItem._name} em todos";
+
+        if(GetCurrentActor()._side == 0)
+        {
+            foreach(Character character in _charactersSideA)
+            {
+                character.ApplyItem(_selectedItem);
+            }
+        }
+        else
+        {
+            foreach (Character character in _charactersSideB)
+            {
+                character.ApplyItem(_selectedItem);
+            }
+        }
+
         _selectedItem = null;
 
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
@@ -327,6 +347,8 @@ public class TurnBasedSystem : MonoBehaviour
         
         message = $"{GetCurrentActor()._name} usou o item {_selectedItem._name} em {target._name}";
 
+        target.ApplyItem(_selectedItem);
+        UpdateCharacterSlotUI();
         _selectedItem = null;
 
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
@@ -365,29 +387,44 @@ public class TurnBasedSystem : MonoBehaviour
 
             if(_selectedSkill is HealingSkillSO)
             {
-                while (!foundTarget)
+                if (_selectedSkill._affectAll)
                 {
-                    int index =Random.Range(0, 3);
-                    if (_charactersSideB[index]._currentHP > 0)
-                    {
-                        target = _charactersSideB[index];
-                        foundTarget = true;
-                    }
+                    ApplySkillOnAllTargets();
                 }
+                else
+                {
+                    while (!foundTarget)
+                    {
+                        int index = Random.Range(0, 3);
+                        if (_charactersSideB[index]._currentHP > 0)
+                        {
+                            target = _charactersSideB[index];
+                            foundTarget = true;
+                        }
+                    }
+                    ApplySkillOnTarget(target);
+                } 
             }
             else
             {
-                while (!foundTarget)
+                if (_selectedSkill._affectAll)
                 {
-                    int index = Random.Range(0, 3);
-                    if (_charactersSideA[index]._currentHP > 0)
+                    ApplySkillOnAllTargets();
+                }
+                else
+                {
+                    while (!foundTarget)
                     {
-                        target = _charactersSideA[index];
-                        foundTarget = true;
+                        int index = Random.Range(0, 3);
+                        if (_charactersSideA[index]._currentHP > 0)
+                        {
+                            target = _charactersSideA[index];
+                            foundTarget = true;
+                        }
                     }
+                    ApplySkillOnTarget(target);
                 }
             }
-            ApplySkillOnTarget(target);
         }
         else
         {
@@ -400,6 +437,7 @@ public class TurnBasedSystem : MonoBehaviour
     {
         int finalDamage = 0;
         bool isCritical = false;
+        bool hasWeaponBonus = false;
         StatusCondition condition = StatusCondition.None;
 
         if(_selectedSkill is HealingSkillSO)
@@ -447,14 +485,57 @@ public class TurnBasedSystem : MonoBehaviour
             }
             else
             {
-                target.ApplyDamage((_selectedSkill as HealingSkillSO)._cureValue);
-                if(target._side == 0)
+                HealingSkillSO healingSkill = _selectedSkill as HealingSkillSO;
+
+                if (GetCurrentActor()._side == 0)
                 {
-                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, target), 0);
+                    foreach (Character character in _charactersSideA)
+                    {
+                        if (healingSkill._canRevive
+                            || character._currentHP > 0)
+                        {
+                            character.ApplyDamage(healingSkill._cureValue);
+                        }
+
+                        if (healingSkill._removeDebuffs
+                            || character._currentHP > 0)
+                        {
+                            character.RemoveAllDebuffs();
+                        }
+
+                        if (healingSkill._cureStatusCondition
+                            || character._currentHP > 0)
+                        {
+                            character.ApplyStatusCondition(StatusCondition.None);
+                        }
+
+                        _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
+                    }
                 }
                 else
                 {
-                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, target), 1);
+                    foreach (Character character in _charactersSideB)
+                    {
+                        if (healingSkill._canRevive
+                            || character._currentHP > 0)
+                        {
+                            character.ApplyDamage(healingSkill._cureValue);
+                        }
+
+                        if (healingSkill._removeDebuffs
+                            || character._currentHP > 0)
+                        {
+                            character.RemoveAllDebuffs();
+                        }
+
+                        if (healingSkill._cureStatusCondition
+                            || character._currentHP > 0)
+                        {
+                            character.ApplyStatusCondition(StatusCondition.None);
+                        }
+
+                        _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
+                    }
                 }
             }
         }
@@ -462,9 +543,9 @@ public class TurnBasedSystem : MonoBehaviour
         {
             if (CheckIfAttackMissed())
             {
-                return SetMessage(0, false, true, condition, target);
+                return SetMessage(0, false, true, condition, target, false);
             }
-
+            
             if (_selectedSkill is StatSkillSO)
             {
                 if (!_selectedSkill._affectAll)
@@ -556,89 +637,218 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 int attackerStat = 0;
                 int defenderStat = 0;
-                if (_selectedSkill is PhysicalSkillSO)
+
+                if(target == null)
                 {
-                    attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
-                    defenderStat = target.GetStat(Stats.PhysicalDefense);
+                    if(GetCurrentActor()._side == 0)
+                    {
+                        if (_selectedSkill is PhysicalSkillSO)
+                        {
+                            attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
+                        }
+                        else
+                        {
+                            attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
+                        }
+
+                        foreach (Character character in _charactersSideB)
+                        {
+                            if (_selectedSkill is PhysicalSkillSO)
+                            {
+                                defenderStat = character.GetStat(Stats.PhysicalDefense);
+                            }
+                            else
+                            {
+                                defenderStat = character.GetStat(Stats.MagicalDefense);
+                            }
+
+                            finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
+
+                            if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
+                                , GetCurrentActor().GetStat(Stats.Luck)
+                                , character.GetStat(Stats.Speed)))
+                            {
+                                finalDamage = (int)Math.Round(finalDamage * 1.3f);
+                                isCritical = true;
+                            }
+
+                            float weaponBonus = GetBonusByWeaponDamageType(character);
+                            hasWeaponBonus = weaponBonus > 1f;
+
+                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f) * weaponBonus));
+
+                            if (character._inDefensiveState)
+                            {
+                                finalDamage = finalDamage / 2;
+                            }
+
+                            if (_selectedSkill._causeStatusCondition
+                                && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
+                            {
+                                condition = _selectedSkill._statusCondition;
+                                character.ApplyStatusCondition(condition);
+                            }
+
+                            if (_selectedSkill._causeDebuff
+                                && Random.Range(0, 101) < _selectedSkill._debuffChance)
+                            {
+                                character.ApplyStatModifier(_selectedSkill._statModifier);
+                            }
+
+                            character.ApplyDamage(finalDamage * -1);
+                           _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
+                        }
+                    }
+                    else
+                    {
+                        if (_selectedSkill is PhysicalSkillSO)
+                        {
+                            attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
+                        }
+                        else
+                        {
+                            attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
+                        }
+
+                        foreach (Character character in _charactersSideA)
+                        {
+                            if (_selectedSkill is PhysicalSkillSO)
+                            {
+                                defenderStat = character.GetStat(Stats.PhysicalDefense);
+                            }
+                            else
+                            {
+                                defenderStat = character.GetStat(Stats.MagicalDefense);
+                            }
+
+                            finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
+
+                            if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
+                                , GetCurrentActor().GetStat(Stats.Luck)
+                                , character.GetStat(Stats.Speed)))
+                            {
+                                finalDamage = (int)Math.Round(finalDamage * 1.3f);
+                                isCritical = true;
+                            }
+                            float weaponBonus = GetBonusByWeaponDamageType(character);
+                            hasWeaponBonus = weaponBonus > 1f;
+
+                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f) * weaponBonus));
+
+                            if (character._inDefensiveState)
+                            {
+                                finalDamage = finalDamage / 2;
+                            }
+
+                            if (_selectedSkill._causeStatusCondition
+                                && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
+                            {
+                                condition = _selectedSkill._statusCondition;
+                                target.ApplyStatusCondition(condition);
+                            }
+                            if (_selectedSkill._causeDebuff
+                                 && Random.Range(0, 101) < _selectedSkill._debuffChance)
+                            {
+                                target.ApplyStatModifier(_selectedSkill._statModifier);
+                            }
+
+                            character.ApplyDamage(finalDamage * -1);
+                            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
+                        }
+                    }
                 }
                 else
                 {
-                    attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
-                    defenderStat = target.GetStat(Stats.MagicalDefense);
-                }
+                    if (_selectedSkill is PhysicalSkillSO)
+                    {
+                        attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
+                        defenderStat = target.GetStat(Stats.PhysicalDefense);
+                    }
+                    else
+                    {
+                        attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
+                        defenderStat = target.GetStat(Stats.MagicalDefense);
+                    }
 
-                finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
+                    finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
 
-                if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
-                    , GetCurrentActor().GetStat(Stats.Luck)
-                    , target.GetStat(Stats.Speed)))
-                {
-                    finalDamage = (int)Math.Round(finalDamage * 1.3f);
-                    isCritical = true;
-                }
+                    if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
+                        , GetCurrentActor().GetStat(Stats.Luck)
+                        , target.GetStat(Stats.Speed)))
+                    {
+                        finalDamage = (int)Math.Round(finalDamage * 1.3f);
+                        isCritical = true;
+                    }
+                    float weaponBonus = GetBonusByWeaponDamageType(target);
+                    hasWeaponBonus = weaponBonus > 1f;
 
-                finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f)));
+                    finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f)) * weaponBonus);
 
-                if (target._inDefensiveState)
-                {
-                    finalDamage = finalDamage / 2;
-                }
+                    if (target._inDefensiveState)
+                    {
+                        finalDamage = finalDamage / 2;
+                    }
 
-                target.ApplyDamage(finalDamage * -1);
-                if (target._side == 0)
-                {
-                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, target), 0);
-                }
-                else
-                {
-                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, target), 1);
+                    if (_selectedSkill._causeStatusCondition
+                                && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
+                    {
+                        condition = _selectedSkill._statusCondition;
+                        target.ApplyStatusCondition(condition);
+                    }
+
+                    if(_selectedSkill._causeDebuff 
+                        && Random.Range(0, 101) < _selectedSkill._debuffChance)
+                    {
+                        target.ApplyStatModifier(_selectedSkill._statModifier);
+                    }
+
+                    target.ApplyDamage(finalDamage * -1);
+                    if (target._side == 0)
+                    {
+                        _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, target), 0);
+                    }
+                    else
+                    {
+                        _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, target), 1);
+                    }
                 }
             }
         }
-        return SetMessage(finalDamage, isCritical, false, condition, target);
+        return SetMessage(finalDamage, isCritical, false, condition, target, hasWeaponBonus);
     }
 
-    private string SetMessage(int damage, bool isCritical, bool missed, StatusCondition statusCondition, Character target)
+    private string SetMessage(int damage, bool isCritical, bool missed, StatusCondition statusCondition, Character target, bool hasWeaponBonus)
     {
         string message = "";
-        if (_selectedSkill._isBasicSkill)
+
+        if(target != null)
         {
-            message = $"{GetCurrentActor()._name} usou o ataque básica em {target._name}." + Environment.NewLine;
+            if (_selectedSkill._isBasicSkill)
+            {
+                message = $"{GetCurrentActor()._name} usou o ataque básica em {target._name}." + Environment.NewLine;
+            }
+            else
+            {
+                message = $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em {target._name}." + Environment.NewLine;
+            }
+
+            if (missed)
+            {
+                message += " O ataquer falhou." + Environment.NewLine;
+            }
+            else
+            {
+                message += isCritical ? " Foi um ataque crítico!" + Environment.NewLine : "";
+                message += _selectedSkill._baseForce > 0 ? $" Causou {damage} de dano." + Environment.NewLine : "";
+                message += _selectedSkill is HealingSkillSO ? $" {target._name} teve seus pontos de vida curados." + Environment.NewLine : "";
+                message += target._inDefensiveState ? $" O dano foi reduzido pois estava se defendendo." + Environment.NewLine : "";
+                message += statusCondition != StatusCondition.None ? $" O alvo ficou {statusCondition.ToString()}." + Environment.NewLine : "";
+                message += hasWeaponBonus ? $"O golpe recebeu bonus da arma utilizada." + Environment.NewLine : "";
+            }
         }
         else
         {
-            message = $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em {target._name}." + Environment.NewLine;
-        }
-
-        if (missed)
-        {
-            message = message + " O ataquer falhou." + Environment.NewLine;
-        }
-        else
-        {
-            if (isCritical)
-            {
-                message += " Foi um ataque crítico!" + Environment.NewLine;
-            }
-            if(_selectedSkill._baseForce > 0)
-            {
-                message += $" Causou {damage} de dano." + Environment.NewLine;
-            }
-
-            if(_selectedSkill is HealingSkillSO)
-            {
-                message += $" {target._name} teve seus pontos de vida curados." + Environment.NewLine;
-            }
-
-            if (target._inDefensiveState)
-            {
-                message += $" O dano foi reduzido pois estava se defendendo." + Environment.NewLine;
-            }
-
-            if(statusCondition != StatusCondition.None)
-            {
-                message += $" O alvo ficou {statusCondition.ToString()}." + Environment.NewLine;
-            }
+            message = $"{GetCurrentActor()._name} usou a habilidade de área {_selectedSkill._name}." + Environment.NewLine;
         }
         return message;
     }
@@ -653,4 +863,42 @@ public class TurnBasedSystem : MonoBehaviour
     {
         return Random.Range(0, 101) > _selectedSkill._accuracy;
     }
+
+    private void UpdateCharacterSlotUI()
+    {
+        if (_actionOrder[_currentTurn]._side == 0)
+        {
+            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, _actionOrder[_currentTurn]), 0);
+        }
+        else
+        {
+            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, _actionOrder[_currentTurn]), 1);
+        }
+    }
+
+    public float GetBonusByWeaponDamageType(Character target)
+    {
+        float bonus = 1f;
+
+        WeaponDamageType attacker = GetCurrentActor()._equipment._weaponDamageType;
+        WeaponDamageType deffender = target._equipment._weaponDamageType;
+
+        WeaponDamageType nextDamageType;
+        if (attacker == WeaponDamageType.Piercing)
+        {
+            nextDamageType = 0;
+        }
+        else
+        {
+            nextDamageType = attacker + 1;
+        }
+
+        if (nextDamageType == deffender)
+        {
+            bonus += 0.3f;
+        }
+
+        return bonus;
+    }
+
 }

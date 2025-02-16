@@ -17,7 +17,7 @@ MonoBehaviour:
   _portrait: {fileID: 1676514738, guid: 04020404e1fb18a4b96fd136dc788449, type: 3}
   _animatorOverride: {fileID: 0}
   _type: 0
-  _equipment: {fileID: 11400000, guid: 953de82dbc7e8cc4b92c7dd254d77c5a, type: 2}
+  _equipment: {fileID: 11400000, guid: 9ff0e8a99b2e80447848400be46f8996, type: 2}
   _stats:
   - _stat: 0
     _value: 80
@@ -44,4 +44,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 29ae8053adce6324cbfb108e03528062, type: 2}
   - {fileID: 11400000, guid: a23ad78353abc8d408fcace548b5d8ba, type: 2}
   - {fileID: 11400000, guid: 630c8e41a1dd825469352d4603a64199, type: 2}
-  _availableItens: []
+  _availableItens:
+  - {fileID: 11400000, guid: 00f10021ad466384b813f60a831a7e30, type: 2}
+  - {fileID: 11400000, guid: 7bcbeada149292046a72830a549dbac1, type: 2}
+  - {fileID: 11400000, guid: 9d1196c13fecdb04a97c3a3a7787db0b, type: 2}

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 [System.Serializable]
 public class Character
@@ -52,7 +53,7 @@ public class Character
    public void ApplyStatusCondition(StatusCondition condition)
     {
         if(_currentStatusCondition != StatusCondition.None
-            && _currentStatusCondition != condition)
+            || _currentStatusCondition == condition)
         {
             return;
         }
@@ -193,18 +194,65 @@ public class Character
 
     public void HandleStatModifier()
     {
-        foreach (StatModifier modifier in _statsModifiers)
+        for (int i = _statsModifiers.Count - 1; i >= 0; i--)
         {
-            if (modifier._isPermanent)
+            if (_statsModifiers[i]._isPermanent)
             {
                 continue;
             }
-            modifier._remainingTurns--;
-            if(modifier._remainingTurns == 0)
+
+            _statsModifiers[i]._remainingTurns--;
+
+            if (_statsModifiers[i]._remainingTurns == 0) 
             {
-                _statsModifiers.Remove(modifier);
+                _statsModifiers.RemoveAt(i);
             }
-            Debug.Log($"{modifier._stat} - {modifier._remainingTurns}");
         }
+    }
+
+    public void ApplyItem(ItemSO item)
+    {
+        if (item._healHP)
+        {
+            ApplyDamage(item._hpValueToCure);
+        }
+
+        if (item._cureSP)
+        {
+            RecoverSP(item._spValueToCure);
+        }
+
+        if (item._removeDebuff)
+        {
+            RemoveAllDebuffs();
+        }
+
+        if (item._cureStatusCondition)
+        {
+            ApplyStatusCondition(StatusCondition.None);
+        }
+    }
+
+    public void ReduceSP(int cost)
+    {
+        _currentSP = _currentSP - cost;
+    }
+
+    public void RemoveAllDebuffs()
+    {
+        for (int i = _statsModifiers.Count - 1; i >= 0; i--)
+        {
+            if (_statsModifiers[i]._isPermanent
+                && _statsModifiers[i]._value < 0)
+            {
+                _statsModifiers.RemoveAt(i);
+            }
+        }
+    }
+
+    public void RecoverSP(int valueToRecover)
+    {
+        int maxSP = _baseCharacter.GetStat(Stats.SpecialPoints)._value + GetStatModifier(Stats.SpecialPoints);
+        _currentSP = Mathf.Clamp( _currentSP + valueToRecover, 0, maxSP);
     }
 }

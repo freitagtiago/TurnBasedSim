@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a5bfef4a49cd4f3418ccf7d700bbe6e1, type: 3}
-  m_Name: Item
+  m_Name: CureStatus
   m_EditorClassIdentifier: 
-  _name: "Po\xE7\xE3o de Cura"
+  _name: Cura Debuff
   _description: Item que cura 10 de HP
   _affetEntireParty: 0
-  _isHealingItem: 1
+  _healHP: 0
   _canRevive: 0
-  _cureAllConditions: 0
   _hpValueToCure: 100
+  _cureSP: 0
   _spValueToCure: 0
-  _removeDebuff: 0
-  _cureStatus: 0
+  _removeDebuff: 1
+  _cureStatusCondition: 0
+  _cureAllConditions: 0
   _statusConditionToCure: 0

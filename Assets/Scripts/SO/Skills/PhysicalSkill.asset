@@ -23,3 +23,15 @@ MonoBehaviour:
   _causeStatusCondition: 0
   _statusCondition: 0
   _statusConditionChance: 0
+  _causeDebuff: 0
+  _statDebuff: 0
+  _debuffChance: 15
+  _statModifier:
+    _stat: 4
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _modifierValue: 0
+    _modifierPercent: 10
+    _minumumTurns: 2
+    _maximumTurns: 6

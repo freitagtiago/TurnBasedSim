@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0933a6828b8dd7e409c3450fd5409dbc, type: 3}
-  m_Name: Equipment
+  m_Name: EquipmentBlunt
   m_EditorClassIdentifier: 
   _name: Arma Simples
   _description: aaaaa
@@ -19,4 +19,9 @@ MonoBehaviour:
     _value: 15
     _isPermanent: 1
     _remainingTurns: 0
+    _modifierValue: 0
+    _modifierPercent: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _weaponDamageType: 1
   _basicSkill: {fileID: 11400000, guid: 1cbff1929c14a24438427c4f819aa395, type: 2}

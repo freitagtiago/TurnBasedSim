@@ -9,13 +9,20 @@ public class ItemSO : ScriptableObject
 
     public bool _affetEntireParty = false;
 
-    public bool _isHealingItem = false;
+    [Header("HP")]
+    public bool _healHP = false;
     public bool _canRevive = false;
-    public bool _cureAllConditions = false;
     public int _hpValueToCure;
+
+    [Header("SP")]
+    public bool _cureSP = false;
     public int _spValueToCure;
+
+    [Header("Stats")]
     public bool _removeDebuff = false;
-    
-    public bool _cureStatus = false;
+
+    [Header("")]
+    public bool _cureStatusCondition = false;
+    public bool _cureAllConditions = false;
     public StatusCondition _statusConditionToCure;
 }

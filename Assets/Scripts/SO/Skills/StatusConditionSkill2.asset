@@ -15,7 +15,7 @@ MonoBehaviour:
   _name: Freeze
   _description: freeze
   _type: 0
-  _cost: 45
+  _cost: 15
   _accuracy: 75
   _baseForce: 0
   _affectAll: 0

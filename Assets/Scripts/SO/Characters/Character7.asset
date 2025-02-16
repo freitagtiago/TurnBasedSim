@@ -38,7 +38,9 @@ MonoBehaviour:
   - _stat: 8
     _value: 45
   _availableSkills:
-  - {fileID: 11400000, guid: 50bbfa7ccb280a8488b2f4320bd06b30, type: 2}
-  - {fileID: 11400000, guid: f88888462efb36943893760a725ce74a, type: 2}
-  - {fileID: 11400000, guid: 9e7db346a2eb2284f889408d77052edc, type: 2}
+  - {fileID: 11400000, guid: f224707b01c36344c832269d2d9c0c21, type: 2}
+  - {fileID: 11400000, guid: f43e07cb3cb468940b800e20af1a18c4, type: 2}
+  - {fileID: 11400000, guid: aff9e1c2eecd4d544bc30e7fbdd05d1e, type: 2}
+  - {fileID: 11400000, guid: 29ae8053adce6324cbfb108e03528062, type: 2}
+  - {fileID: 11400000, guid: a23ad78353abc8d408fcace548b5d8ba, type: 2}
   _availableItens: []

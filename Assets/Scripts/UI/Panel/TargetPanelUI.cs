@@ -124,30 +124,27 @@ public class TargetPanelUI : MonoBehaviour, IPanelUI
             ItemSO item = TurnBasedSystem.Instance._selectedItem;
             _title.text = string.Format(_defaultTitle, item._name);
 
-            if (item._isHealingItem)
+            if (TurnBasedSystem.Instance.GetCurrentActor()._side == 0)
             {
-                if (TurnBasedSystem.Instance.GetCurrentActor()._side == 0)
+                foreach (Character character in TurnBasedSystem.Instance._charactersSideA)
                 {
-                    foreach (Character character in TurnBasedSystem.Instance._charactersSideA)
+                    if(character._currentHP > 0
+                       || item._canRevive)
                     {
-                        if(character._currentHP > 0
-                           || item._canRevive)
-                        {
-                            TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
-                            targetButton.SetupTarget(character);
-                        }
+                        TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
+                        targetButton.SetupTarget(character);
                     }
                 }
-                else
+            }
+            else
+            {
+                foreach (Character character in TurnBasedSystem.Instance._charactersSideB)
                 {
-                    foreach (Character character in TurnBasedSystem.Instance._charactersSideB)
+                    if (character._currentHP > 0
+                       || item._canRevive)
                     {
-                        if (character._currentHP > 0
-                           || item._canRevive)
-                        {
-                            TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
-                            targetButton.SetupTarget(character);
-                        }
+                        TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
+                        targetButton.SetupTarget(character);
                     }
                 }
             }
