@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0933a6828b8dd7e409c3450fd5409dbc, type: 3}
   m_Name: Equipment
   m_EditorClassIdentifier: 
-  _name: Teste de Arma
+  _name: Arma Simples
   _description: aaaaa
   _statModifier:
   - _stat: 2
-    _value: 10
+    _value: 15
+    _isPermanent: 1
+    _remainingTurns: 0
   _basicSkill: {fileID: 11400000, guid: 1cbff1929c14a24438427c4f819aa395, type: 2}

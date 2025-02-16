@@ -19,13 +19,14 @@ public class Character
     [SerializeField] public int _currentHP = 0;
     [SerializeField] public int _currentSP = 0;
 
-    [SerializeField] public List<Stat> _statsModifiers { get; private set; } = new List<Stat>();
+    [SerializeField] public List<StatModifier> _statsModifiers { get; private set; } = new List<StatModifier>();
     [SerializeField] public List<Stat> _stats { get; private set; } = new List<Stat>();
 
     [SerializeField] public List<SkillSO> _skillList { get; private set; } = new List<SkillSO>();
     [SerializeField] public List<ItemSO> _itemsList { get; private set; } = new List<ItemSO>();
 
     public int _side = 0;
+    public bool _inDefensiveState = false;
 
     public void SetupCharacter(CharacterSO baseCharacter, int side)
     {
@@ -39,7 +40,7 @@ public class Character
         _equipment = baseCharacter._equipment;
 
         _side = side;
-        foreach (Stat stat in _equipment._statModifier)
+        foreach (StatModifier stat in _equipment._statModifier)
         {
             ApplyStatModifier(stat);
         }
@@ -57,26 +58,32 @@ public class Character
         }
         _currentStatusCondition = condition;
 
-        _remainingTurnsStatusCondition = Mathf.Clamp(6 - (GetStat(Stats.Luck) / 10), 1,4);
+        if(condition == StatusCondition.Freezed)
+        {
+            _remainingTurnsStatusCondition = 10;
+        }
+        else
+        {
+            _remainingTurnsStatusCondition = Mathf.Clamp(6 - (GetStat(Stats.Luck) / 10), 1, 4);
+        }
     }
 
-    public void ApplyStatModifier(Stat stat)
+    public void ApplyStatModifier(StatModifier statModifier)
     {
-        bool statFound = false;
-        foreach (Stat statModifier in _statsModifiers)
+        if (!statModifier._isPermanent)
         {
-            if(statModifier._stat == stat._stat)
+            statModifier._remainingTurns = Mathf.Clamp(statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
+
+            if(statModifier._modifierValue != 0)
             {
-                statModifier._value += stat._value;
-                statFound = true;
-                break;
+                statModifier._value = statModifier._modifierValue;
+            }
+            else
+            {
+                statModifier._value = (GetStat(statModifier._stat) * statModifier._modifierPercent) / 100;
             }
         }
-
-        if (!statFound)
-        {
-            _statsModifiers.Add(stat);
-        }
+        _statsModifiers.Add(statModifier);
     }
 
     public int GetStat(Stats statToGet)
@@ -107,7 +114,7 @@ public class Character
     private int GetStatModifier(Stats stat)
     {
         int statModifierValue = 0;
-        foreach(Stat modifier in _statsModifiers)
+        foreach(StatModifier modifier in _statsModifiers)
         {
             if(modifier._stat == stat)
             {
@@ -136,6 +143,7 @@ public class Character
 
         if(_remainingTurnsStatusCondition == 0)
         {
+            _currentStatusCondition = StatusCondition.None;
             return blockAction;
         }
 
@@ -147,7 +155,7 @@ public class Character
         switch (_currentStatusCondition)
         {
             case StatusCondition.Poisoned:
-                ApplyDamage((int)Mathf.Round(_currentHP * 0.1f * -1));
+                ApplyDamage((int)Mathf.Round(_currentHP * 0.15f * -1));
                 break;
             case StatusCondition.Paralyzed:
                 blockAction = Random.Range(0, 101) < 50;
@@ -168,10 +176,35 @@ public class Character
                 ApplyDamage((int)Mathf.Round(_currentHP * (Random.Range(0.05f,0.21f) * -1)));
                 break;
             case StatusCondition.Freezed:
-                ApplyDamage((int)Mathf.Round(_currentHP * 0.05f * -1));
+                ApplyDamage((int)Mathf.Round(_currentHP * 0.1f * -1));
+
+                bool defrostChance = Random.Range(0, 11) >= _remainingTurnsStatusCondition;
+
+                if (defrostChance)
+                {
+                    _remainingTurnsStatusCondition = 1;
+                }
+
                 blockAction = true;
                 break;
         }
         return blockAction;
+    }
+
+    public void HandleStatModifier()
+    {
+        foreach (StatModifier modifier in _statsModifiers)
+        {
+            if (modifier._isPermanent)
+            {
+                continue;
+            }
+            modifier._remainingTurns--;
+            if(modifier._remainingTurns == 0)
+            {
+                _statsModifiers.Remove(modifier);
+            }
+            Debug.Log($"{modifier._stat} - {modifier._remainingTurns}");
+        }
     }
 }

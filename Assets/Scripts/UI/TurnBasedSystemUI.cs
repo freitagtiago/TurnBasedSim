@@ -101,6 +101,11 @@ public class TurnBasedSystemUI : MonoBehaviour
         _targetPanelUI.GetComponent<IPanelUI>().ClosePanel();
     }
 
+    public void CloseDialoguePanel()
+    {
+        _dialoguePanelUI.GetComponent<IPanelUI>().ClosePanel();
+    }
+
     public void SetupDialoguePanel(string message, Action action) 
     {
         _dialoguePanelUI.GetComponent<DialogueUI>().SetDialogue(message, action);

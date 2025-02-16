@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
 public class DialogueUI : MonoBehaviour, IPanelUI
@@ -40,11 +41,14 @@ public class DialogueUI : MonoBehaviour, IPanelUI
         StartCoroutine(DialogueRoutine(textToShow, actionToExecute));
     }
 
-    private IEnumerator DialogueRoutine(string textToShow, Action actionToExecute)
+    private IEnumerator DialogueRoutine(string message, Action actionToExecute)
     {
-        _dialogueText.text = textToShow;
+        Debug.Log($"AÇÃO: {message}");
+        _dialogueText.text = message;
         _panel.SetActive(true);
+
         yield return new WaitForSecondsRealtime(_dialogueTime);
+        
         _panel.SetActive(false);
         _dialogueText.text = "";
         actionToExecute?.Invoke();

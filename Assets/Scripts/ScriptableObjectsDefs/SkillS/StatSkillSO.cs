@@ -4,9 +4,5 @@ using UnityEngine;
 public class StatSkillSO : SkillSO
 {
     [Header("Stat Skill Related")]
-    public bool _isBuff = true;
-    public Stats _stat;
-    public int _percentEffect;
-    public int _minimumTurnCount = 1;
-    public int _maximumTurnCount = 3;
+    public StatModifier _statModifier;
 }

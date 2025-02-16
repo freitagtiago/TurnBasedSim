@@ -12,6 +12,7 @@ public class TargetPanelUI : MonoBehaviour, IPanelUI
     [SerializeField] private TextMeshProUGUI _title;
     [SerializeField] private TargetButtonUI _targetButtonPrefab;
     [SerializeField] private Transform _targetButtonsParent;
+    [SerializeField] private TurnBasedSystemUI _turnBaseSystemUI;
     public void CloseOtherPanels()
     {
         foreach (GameObject panel in _panelsToClose)
@@ -33,6 +34,12 @@ public class TargetPanelUI : MonoBehaviour, IPanelUI
         DeleteAllButtons();
         SetupTargetList();
         _panel.SetActive(true);
+    }
+
+    public void ReturnToActionPanel()
+    {
+        ClosePanel();
+        _turnBaseSystemUI.SetupPlayerAction(TurnBasedSystem.Instance.GetCurrentActor());
     }
 
     private void DeleteAllButtons()

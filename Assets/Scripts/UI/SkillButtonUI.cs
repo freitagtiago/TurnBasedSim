@@ -22,7 +22,6 @@ public class SkillButtonUI : MonoBehaviour
 
     public void SelectSkill()
     {
-        Debug.Log("USOU " + _skill._name);
         TurnBasedSystem.Instance.SetSelectedSkill(_skill);
     }
 }

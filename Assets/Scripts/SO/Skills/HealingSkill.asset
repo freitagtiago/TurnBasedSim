@@ -12,18 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb7424debb4b3e54c9703efbbb793829, type: 3}
   m_Name: HealingSkill
   m_EditorClassIdentifier: 
-  _name: Teste Healing
+  _name: "Cura M\xE9dia"
   _description: teste inicial
   _type: 0
   _cost: 10
   _accuracy: 100
-  _baseForce: 20
+  _baseForce: 0
   _affectAll: 0
+  _isBasicSkill: 0
   _causeStatusCondition: 0
-  _status: 0
+  _statusCondition: 0
   _statusConditionChance: 0
   _isPercent: 1
   _canRevive: 0
-  _cureValue: 15
+  _cureValue: 55
   _cureStatusCondition: 0
   _removeDebuffs: 0

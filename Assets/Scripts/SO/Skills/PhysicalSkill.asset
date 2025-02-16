@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e6e1462bc0083944bb68b22ad2ce5ec, type: 3}
   m_Name: PhysicalSkill
   m_EditorClassIdentifier: 
-  _name: Physical skill
+  _name: "Ataque F\xEDsico Forte"
   _description: fisico
   _type: 0
   _cost: 10

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56b5b5fa2fc79424293a5bf83bb85fcb, type: 3}
   m_Name: MagicalSkill
   m_EditorClassIdentifier: 
-  _name: Magical skill
+  _name: "Ataque M\xE1gico Forte"
   _description: magia
   _type: 0
   _cost: 10

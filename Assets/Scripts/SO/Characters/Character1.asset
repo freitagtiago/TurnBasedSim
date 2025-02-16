@@ -40,4 +40,8 @@ MonoBehaviour:
   _availableSkills:
   - {fileID: 11400000, guid: 50bbfa7ccb280a8488b2f4320bd06b30, type: 2}
   - {fileID: 11400000, guid: f224707b01c36344c832269d2d9c0c21, type: 2}
+  - {fileID: 11400000, guid: aff9e1c2eecd4d544bc30e7fbdd05d1e, type: 2}
+  - {fileID: 11400000, guid: 29ae8053adce6324cbfb108e03528062, type: 2}
+  - {fileID: 11400000, guid: a23ad78353abc8d408fcace548b5d8ba, type: 2}
+  - {fileID: 11400000, guid: 630c8e41a1dd825469352d4603a64199, type: 2}
   _availableItens: []

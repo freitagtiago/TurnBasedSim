@@ -39,4 +39,9 @@ MonoBehaviour:
     _value: 45
   _availableSkills:
   - {fileID: 11400000, guid: 954b00ac97bd8d84ebad590125b05532, type: 2}
+  - {fileID: 11400000, guid: aff9e1c2eecd4d544bc30e7fbdd05d1e, type: 2}
+  - {fileID: 11400000, guid: f88888462efb36943893760a725ce74a, type: 2}
+  - {fileID: 11400000, guid: f43e07cb3cb468940b800e20af1a18c4, type: 2}
+  - {fileID: 11400000, guid: a23ad78353abc8d408fcace548b5d8ba, type: 2}
+  - {fileID: 11400000, guid: 630c8e41a1dd825469352d4603a64199, type: 2}
   _availableItens: []

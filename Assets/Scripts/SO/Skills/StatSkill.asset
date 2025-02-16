@@ -12,18 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6d31ea78c778fd4696cfd62e707b944, type: 3}
   m_Name: StatSkill
   m_EditorClassIdentifier: 
-  _name: Stat skill
+  _name: "Debuff de Ataque F\xEDsico"
   _description: debuff
   _type: 0
   _cost: 5
-  _accuracy: 50
+  _accuracy: 90
   _baseForce: 0
   _affectAll: 0
+  _isBasicSkill: 0
   _causeStatusCondition: 0
-  _status: 0
+  _statusCondition: 0
   _statusConditionChance: 0
-  _isBuff: 1
-  _stat: 0
-  _percentEffect: 0
-  _minimumTurnCount: 1
-  _maximumTurnCount: 3
+  _statModifier:
+    _stat: 2
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _modifierValue: -25
+    _modifierPercent: 0
+    _minumumTurns: 2
+    _maximumTurns: 6

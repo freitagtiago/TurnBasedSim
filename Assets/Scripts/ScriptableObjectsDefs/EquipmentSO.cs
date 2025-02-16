@@ -6,6 +6,6 @@ public class EquipmentSO : ScriptableObject
 {
     public string _name;
     public string _description;
-    public List<Stat> _statModifier = new List<Stat>();
+    public List<StatModifier> _statModifier = new List<StatModifier>();
     public SkillSO _basicSkill;
 }

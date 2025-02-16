@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using static UnityEngine.GraphicsBuffer;
@@ -73,7 +74,7 @@ public class TurnBasedSystem : MonoBehaviour
         _currentState = BattleState.START;
         LoadCharacters();
         DefineOrder();
-        AdvanceTurn();
+        StartCoroutine(AdvanceTurn());
         _onBattle = true;       
     }
 
@@ -125,7 +126,7 @@ public class TurnBasedSystem : MonoBehaviour
         _battleUI.EndBattle();
     }
 
-    public void AdvanceTurn()
+    public IEnumerator AdvanceTurn()
     {
         if (CheckCondition())
         {
@@ -145,9 +146,19 @@ public class TurnBasedSystem : MonoBehaviour
 
                 if (_actionOrder[_currentTurn]._currentHP > 0)
                 {
+                    _actionOrder[_currentTurn].HandleStatModifier();
                     if (!_actionOrder[_currentTurn].HandleStatusCondition())
                     {
                         currentActorDefined = true;
+
+                        if(_actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Poisoned
+                            || _actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Burned)
+                        {
+                            string message = $"{_actionOrder[_currentTurn]._name} está sofrendo os efeitos de {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+
+                            _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
+                            yield return new WaitForSeconds(3f);
+                        }
 
                         if (_actionOrder[_currentTurn]._side == 0)
                         {
@@ -160,19 +171,30 @@ public class TurnBasedSystem : MonoBehaviour
                     }
                     else
                     {
-                        Debug.Log("AÇÃO BLOQUEADA");
-                        //MOSTRAR DE ALGUMA FORMA
+                        string message = "";
+
+                        if(_actionOrder[_currentTurn]._currentStatusCondition != StatusCondition.Freezed)
+                        {
+                            message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+                        }
+                        else
+                        {
+                            message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, pode se recuperar a qualquer momento.";
+                        } 
+                        _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
+                        yield return new WaitForSeconds(3f);
                     }
                 }
             }
-            SetAction();
+            SetTurnAction();
         }
     }
 
-    private void SetAction()
+    private void SetTurnAction()
     {
+        _actionOrder[_currentTurn]._inDefensiveState = false;
         Character currentActor = _actionOrder[_currentTurn];
-        if(currentActor._side == 0)
+        if (currentActor._side == 0)
         {
             //PLAYER
             _battleUI.SetupPlayerAction(currentActor);
@@ -192,7 +214,7 @@ public class TurnBasedSystem : MonoBehaviour
         }
         else
         {
-            AdvanceTurn();
+            StartCoroutine(AdvanceTurn());
         }
     }
 
@@ -239,8 +261,8 @@ public class TurnBasedSystem : MonoBehaviour
             _battleUI.CloseTargetPanel();
             string message = $"{GetCurrentActor()._name} se defendeu";
             _selectedSkill = null;
-
-            _battleUI.SetupDialoguePanel(message, () => { AdvanceTurn(); });
+            _actionOrder[_currentTurn]._inDefensiveState = true;
+            _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
         }
     }
 
@@ -277,7 +299,7 @@ public class TurnBasedSystem : MonoBehaviour
         _battleUI.CloseTargetPanel();
         string message = CalculateAndApplyDamage(target);
         _selectedSkill = null;
-        _battleUI.SetupDialoguePanel(message, () => { AdvanceTurn(); });
+        _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
 
     public void ApplySkillOnAllTargets()
@@ -286,7 +308,7 @@ public class TurnBasedSystem : MonoBehaviour
         string message = $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em todos";
         _selectedSkill = null;
 
-        _battleUI.SetupDialoguePanel(message, () => { AdvanceTurn(); });
+        _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
 
     public void ApplyItemOnAllTargets()
@@ -295,8 +317,9 @@ public class TurnBasedSystem : MonoBehaviour
         string message = $"{GetCurrentActor()._name} usou item {_selectedItem._name} em todos";
         _selectedItem = null;
 
-        _battleUI.SetupDialoguePanel(message, () => { AdvanceTurn(); });
+        _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
+
     public void ApplyItemOnTarget(Character target)
     {
         _battleUI.CloseTargetPanel();
@@ -306,7 +329,7 @@ public class TurnBasedSystem : MonoBehaviour
 
         _selectedItem = null;
 
-        _battleUI.SetupDialoguePanel(message, () => { AdvanceTurn(); });
+        _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
 
     private void EnemyRoutine()
@@ -325,7 +348,7 @@ public class TurnBasedSystem : MonoBehaviour
             bool foundTarget = false;
             while (!foundTarget)
             {
-                int index = UnityEngine.Random.Range(0, 3);
+                int index = Random.Range(0, 3);
                 if (_charactersSideA[index]._currentHP > 0)
                 {
                     target = _charactersSideA[index];
@@ -344,7 +367,7 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 while (!foundTarget)
                 {
-                    int index = UnityEngine.Random.Range(0, 3);
+                    int index =Random.Range(0, 3);
                     if (_charactersSideB[index]._currentHP > 0)
                     {
                         target = _charactersSideB[index];
@@ -356,7 +379,7 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 while (!foundTarget)
                 {
-                    int index = UnityEngine.Random.Range(0, 3);
+                    int index = Random.Range(0, 3);
                     if (_charactersSideA[index]._currentHP > 0)
                     {
                         target = _charactersSideA[index];
@@ -444,7 +467,41 @@ public class TurnBasedSystem : MonoBehaviour
 
             if (_selectedSkill is StatSkillSO)
             {
-
+                if (!_selectedSkill._affectAll)
+                {
+                    target.ApplyStatModifier((_selectedSkill as StatSkillSO)._statModifier);
+                }
+                else
+                {
+                    if (GetCurrentActor()._side == 0)
+                    {
+                        foreach (Character character in _charactersSideB)
+                        {
+                            if (CheckIfAttackMissed())
+                            {
+                                if (character._currentHP > 0)
+                                {
+                                    character.ApplyStatModifier((_selectedSkill as StatSkillSO)._statModifier);
+                                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (Character character in _charactersSideA)
+                        {
+                            if (CheckIfAttackMissed())
+                            {
+                                if (character._currentHP > 0)
+                                {
+                                    character.ApplyStatModifier((_selectedSkill as StatSkillSO)._statModifier);
+                                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             else if (_selectedSkill is StatusConditionSkillSO)
             {
@@ -473,12 +530,8 @@ public class TurnBasedSystem : MonoBehaviour
                             if (character._currentHP > 0
                                 && character._currentStatusCondition != StatusCondition.None)
                             {
-                                bool canCauseCondition = (Random.Range(0, 101) < (_selectedSkill as StatusConditionSkillSO)._accuracy);
-                                if (canCauseCondition)
-                                {
-                                    character.ApplyStatusCondition((_selectedSkill as StatusConditionSkillSO)._statusCondition);
-                                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
-                                }
+                                character.ApplyStatusCondition((_selectedSkill as StatusConditionSkillSO)._statusCondition);
+                                _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
                             }
                         }
                     }
@@ -489,8 +542,7 @@ public class TurnBasedSystem : MonoBehaviour
                             if (character._currentHP > 0
                                 && character._currentStatusCondition != StatusCondition.None)
                             {
-                                bool canCauseCondition = (Random.Range(0, 101) < (_selectedSkill as StatusConditionSkillSO)._accuracy);
-                                if (canCauseCondition)
+                                if (!CheckIfAttackMissed())
                                 {
                                     character.ApplyStatusCondition((_selectedSkill as StatusConditionSkillSO)._statusCondition);
                                     _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
@@ -500,7 +552,7 @@ public class TurnBasedSystem : MonoBehaviour
                     }
                 }
             }
-            else
+            else //Physical or Magical
             {
                 int attackerStat = 0;
                 int defenderStat = 0;
@@ -516,6 +568,7 @@ public class TurnBasedSystem : MonoBehaviour
                 }
 
                 finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
+
                 if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
                     , GetCurrentActor().GetStat(Stats.Luck)
                     , target.GetStat(Stats.Speed)))
@@ -525,6 +578,11 @@ public class TurnBasedSystem : MonoBehaviour
                 }
 
                 finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f)));
+
+                if (target._inDefensiveState)
+                {
+                    finalDamage = finalDamage / 2;
+                }
 
                 target.ApplyDamage(finalDamage * -1);
                 if (target._side == 0)
@@ -537,7 +595,6 @@ public class TurnBasedSystem : MonoBehaviour
                 }
             }
         }
-
         return SetMessage(finalDamage, isCritical, false, condition, target);
     }
 
@@ -563,10 +620,20 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 message += " Foi um ataque crítico!" + Environment.NewLine;
             }
-            if(_selectedSkill is not HealingSkillSO)
+            if(_selectedSkill._baseForce > 0)
             {
                 message += $" Causou {damage} de dano." + Environment.NewLine;
-            }   
+            }
+
+            if(_selectedSkill is HealingSkillSO)
+            {
+                message += $" {target._name} teve seus pontos de vida curados." + Environment.NewLine;
+            }
+
+            if (target._inDefensiveState)
+            {
+                message += $" O dano foi reduzido pois estava se defendendo." + Environment.NewLine;
+            }
 
             if(statusCondition != StatusCondition.None)
             {
@@ -578,10 +645,7 @@ public class TurnBasedSystem : MonoBehaviour
 
     private bool CheckIfIsCritical(int attackerSpeed, int attackerLucky, int defenderSpeed)
     {
-        //int criticalChance = Mathf.Clamp((int)Math.Round((attackerLucky + (attackerSpeed - defenderSpeed))* 0.01), 0, 100);
         int criticalChance = Mathf.Clamp((int)Math.Round((attackerSpeed / defenderSpeed) * 1.5f + attackerLucky * 0.1f), 0, 100);
-
-        Debug.Log("CHANCE DE CRITICO DE " + criticalChance);
         return Random.Range(0,101) <= criticalChance;
     }
 
