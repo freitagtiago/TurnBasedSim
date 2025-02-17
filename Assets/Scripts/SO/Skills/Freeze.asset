@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Freeze
   _description: freeze
-  _type: 0
+  _type: 1
   _cost: 15
   _accuracy: 75
   _baseForce: 0
@@ -23,5 +23,17 @@ MonoBehaviour:
   _causeStatusCondition: 0
   _statusCondition: 7
   _statusConditionChance: 0
+  _applyStatModifier: 0
+  _statDebuff: 0
+  _modifierChance: 0
+  _statModifier:
+    _stat: 0
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
   _minimumTurnCount: 1
   _maximumTurnCount: 10

@@ -93,7 +93,7 @@ public class Character
                             modifier._stage++;
                             modifier._remainingTurns = Mathf.Clamp(statModifier._remainingTurns + statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
 
-                            statModifier._value = (int)(GetStat(statModifier._stat) * (12.5f * statModifier._stage * modifier._modifierFactor)) / 100;
+                            statModifier._value = (int)(GetStat(statModifier._stat) * (TurnBasedSystem.Instance._baseStageMofidier * statModifier._stage * modifier._modifierFactor)) / 100;
                         }
                         else
                         {
@@ -109,7 +109,7 @@ public class Character
                         }
                         else
                         {
-                            modifier._value = (int)(GetStat(modifier._stat) * (12.5f * modifier._stage * modifier._modifierFactor)) / 100;
+                            modifier._value = (int)(GetStat(modifier._stat) * (TurnBasedSystem.Instance._baseStageMofidier * modifier._stage * modifier._modifierFactor)) / 100;
                         }
                     }
                     break;
@@ -118,7 +118,7 @@ public class Character
             if (!statAlreadyExist)
             {
                 statModifier._remainingTurns = Mathf.Clamp(statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
-                statModifier._value = (int)(GetStat(statModifier._stat) * (12.5f * statModifier._stage * statModifier._modifierFactor)) / 100;
+                statModifier._value = (int)(GetStat(statModifier._stat) * (TurnBasedSystem.Instance._baseStageMofidier * statModifier._stage * statModifier._modifierFactor)) / 100;
                 _statsModifiers.Add(statModifier);
             }
             if(removeModifier != null)
@@ -174,6 +174,12 @@ public class Character
     public void ApplyDamage(int damage)
     {
         _currentHP = Mathf.Clamp(_currentHP + damage, 0, _maxHP);
+        if(_currentHP == 0)
+        {
+            _currentStatusCondition = StatusCondition.None;
+            _remainingTurnsStatusCondition = 0;
+            RemoveAllDebuffs();
+        }
     }
 
     public bool HandleStatusCondition()
@@ -210,14 +216,8 @@ public class Character
             case StatusCondition.Exausted:
                 break;
             case StatusCondition.Confused:
-                blockAction = Random.Range(0, 101) < 50;
-                if (blockAction)
-                {
-                    ApplyDamage(_equipment._basicSkill._baseForce);
-                }
                 break;
             case StatusCondition.Burned:
-
                 ApplyDamage((int)Mathf.Round(_currentHP * (Random.Range(0.05f,0.21f) * -1)));
                 break;
             case StatusCondition.Freezed:

@@ -795,6 +795,49 @@ MonoBehaviour:
     _inDefensiveState: 0
   _onBattle: 0
   _currentTurn: -1
+  _exaustedPenalization: 0.3
+  _defensePenalization: 2
+  _criticalBonus: 1.3
+  _criticalFator: 1.5
+  _stabBonus: 1.3
+  _weaponDamageBonus: 0.3
+  _minimumDamageVariation: 0.3
+  _maximumDamageVariation: 1
+  _minimumDamage: 15
+  _maximumDamage: 9999
+  _typeMatchupList:
+  - _elementalType: 0
+    _strongAgainst: 01000000
+    _weakAgainst: 03000000
+    _resistences: 
+  - _elementalType: 1
+    _strongAgainst: 02000000
+    _weakAgainst: 00000000
+    _resistences: 
+  - _elementalType: 2
+    _strongAgainst: 03000000
+    _weakAgainst: 01000000
+    _resistences: 
+  - _elementalType: 3
+    _strongAgainst: 00000000
+    _weakAgainst: 02000000
+    _resistences: 
+  - _elementalType: 4
+    _strongAgainst: 06000000
+    _weakAgainst: 06000000
+    _resistences: 0000000001000000
+  - _elementalType: 5
+    _strongAgainst: 07000000
+    _weakAgainst: 07000000
+    _resistences: 0100000002000000
+  - _elementalType: 6
+    _strongAgainst: 04000000
+    _weakAgainst: 04000000
+    _resistences: 0300000002000000
+  - _elementalType: 7
+    _strongAgainst: 05000000
+    _weakAgainst: 05000000
+    _resistences: 0000000003000000
 --- !u!4 &246790898
 Transform:
   m_ObjectHideFlags: 0

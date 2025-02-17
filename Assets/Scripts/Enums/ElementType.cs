@@ -1,7 +1,12 @@
 public enum ElementType
 {
-    //Revisar os tipos
-    Type0
-    , Type1
-    , Type2
+    Neutral
+    ,Icy
+    ,Burning
+    ,Organic
+    ,Tempest
+    ,Luminous
+    ,Savage
+    ,Darkness
+    ,Spiritual
 }

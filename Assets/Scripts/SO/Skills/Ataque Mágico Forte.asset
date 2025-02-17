@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: "Ataque M\xE1gico Forte"
   _description: magia
-  _type: 0
+  _type: 1
   _cost: 10
   _accuracy: 90
   _baseForce: 65
@@ -24,7 +24,6 @@ MonoBehaviour:
   _statusCondition: 0
   _statusConditionChance: 0
   _applyStatModifier: 1
-  _modifierFactor: 1
   _statDebuff: 0
   _modifierChance: 0
   _statModifier:

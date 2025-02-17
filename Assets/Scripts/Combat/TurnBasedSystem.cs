@@ -45,6 +45,10 @@ public class TurnBasedSystem : MonoBehaviour
     [SerializeField] private float _maximumDamageVariation = 1f;
     [SerializeField] private int _minimumDamage = 15;
     [SerializeField] private int _maximumDamage = 9999;
+    [SerializeField] public float _baseStageMofidier { get; private set; } = 12.5f;
+
+    [Header("Matchups")]
+    public List<TypeMatchup> _typeMatchupList = new List<TypeMatchup>();
 
     private void Awake()
     {
@@ -273,7 +277,9 @@ public class TurnBasedSystem : MonoBehaviour
             _battleUI.CloseTargetPanel();
             string message = $"{GetCurrentActor()._name} se defendeu";
             _selectedSkill = null;
+            _actionOrder[_currentTurn].RecoverSP((int)(_actionOrder[_currentTurn]._maxSP * 0.2f));
             _actionOrder[_currentTurn]._inDefensiveState = true;
+            UpdateTargetCharacterSlotUI(_actionOrder[_currentTurn]._side, _actionOrder[_currentTurn]);
             _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
         }
     }
@@ -453,13 +459,45 @@ public class TurnBasedSystem : MonoBehaviour
         int finalDamage = 0;
         bool isCritical = false;
         bool hasWeaponBonus = false;
+        float matchupValue = 1;
         StatusCondition condition = StatusCondition.None;
 
-        if (GetCurrentActor()._currentStatusCondition == StatusCondition.Blind)
+        Character currentActor = GetCurrentActor();
+
+        if (currentActor._currentStatusCondition == StatusCondition.Blind)
         {
             if (Random.Range(0, 101) > 50)
             {
-                return SetMessage(0, false, true, condition, target, false);
+                return SetMessage(0
+                                , false
+                                , true
+                                , condition
+                                , target
+                                , false
+                                , false
+                                , matchupValue);
+            }
+        }else if(currentActor._currentStatusCondition == StatusCondition.Confused)
+        {
+            if (Random.Range(0, 101) > 50)
+            {
+                currentActor.ApplyDamage(currentActor._equipment._basicSkill._baseForce);
+                if (currentActor._side == 0)
+                {
+                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, currentActor), 0);
+                }
+                else
+                {
+                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, currentActor), 1);
+                }
+                return SetMessage(currentActor._equipment._basicSkill._baseForce
+                                   , false
+                                   , false
+                                   , condition
+                                   , target
+                                   , false
+                                   , true
+                                   , matchupValue);
             }
         }
 
@@ -468,7 +506,7 @@ public class TurnBasedSystem : MonoBehaviour
             if (!_selectedSkill._affectAll)
             {
                 bool canRevive = (_selectedSkill as HealingSkillSO)._canRevive;
-                if (GetCurrentActor()._side == 0){
+                if (currentActor._side == 0){
                     foreach (Character character in _charactersSideA)
                     {
                         if (!canRevive)
@@ -510,7 +548,7 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 HealingSkillSO healingSkill = _selectedSkill as HealingSkillSO;
 
-                if (GetCurrentActor()._side == 0)
+                if (currentActor._side == 0)
                 {
                     foreach (Character character in _charactersSideA)
                     {
@@ -566,7 +604,14 @@ public class TurnBasedSystem : MonoBehaviour
         {
             if (CheckIfAttackMissed())
             {
-                return SetMessage(0, false, true, condition, target, false);
+                return SetMessage(0
+                                   , false
+                                   , true
+                                   , condition
+                                   , target
+                                   , false
+                                   , false
+                                   , matchupValue);
             }
 
             if (_selectedSkill is StatSkillSO)
@@ -577,7 +622,7 @@ public class TurnBasedSystem : MonoBehaviour
                 }
                 else
                 {
-                    if (GetCurrentActor()._side == 0)
+                    if (currentActor._side == 0)
                     {
                         foreach (Character character in _charactersSideB)
                         {
@@ -627,7 +672,7 @@ public class TurnBasedSystem : MonoBehaviour
                 }
                 else
                 {
-                    if (GetCurrentActor()._side == 0)
+                    if (currentActor._side == 0)
                     {
                         foreach (Character character in _charactersSideB)
                         {
@@ -663,15 +708,15 @@ public class TurnBasedSystem : MonoBehaviour
 
                 if (target == null)
                 {
-                    if (GetCurrentActor()._side == 0)
+                    if (currentActor._side == 0)
                     {
                         if (_selectedSkill is PhysicalSkillSO)
                         {
-                            attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
+                            attackerStat = currentActor.GetStat(Stats.PhysicalAttack);
                         }
                         else
                         {
-                            attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
+                            attackerStat = currentActor.GetStat(Stats.MagicalAttack);
                         }
 
                         foreach (Character character in _charactersSideB)
@@ -685,30 +730,15 @@ public class TurnBasedSystem : MonoBehaviour
                                 defenderStat = character.GetStat(Stats.MagicalDefense);
                             }
 
-                            finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
-
-                            if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
-                                , GetCurrentActor().GetStat(Stats.Luck)
+                            if (CheckIfIsCritical(currentActor.GetStat(Stats.Speed)
+                                , currentActor.GetStat(Stats.Luck)
                                 , character.GetStat(Stats.Speed)))
                             {
-                                finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
                                 isCritical = true;
                             }
 
                             float weaponBonus = GetBonusByWeaponDamageType(character);
                             hasWeaponBonus = weaponBonus > 1f;
-
-                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation) * weaponBonus));
-
-                            if(GetCurrentActor()._currentStatusCondition == StatusCondition.Exausted)
-                            {
-                                finalDamage -= (int)(finalDamage * _exaustedPenalization);
-                            }
-
-                            if (character._inDefensiveState)
-                            {
-                                finalDamage = (int)(finalDamage / _defensePenalization);
-                            }
 
                             if (_selectedSkill._causeStatusCondition
                                 && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
@@ -723,6 +753,15 @@ public class TurnBasedSystem : MonoBehaviour
                                 character.ApplyStatModifier(_selectedSkill._statModifier);
                             }
 
+                            GetTypeMatchupBonus(currentActor._type, character._type, out matchupValue);
+                            finalDamage = GetDamage(attackerStat
+                                                    , defenderStat
+                                                    , _selectedSkill._baseForce
+                                                    , isCritical
+                                                    , target._inDefensiveState
+                                                    , weaponBonus
+                                                    , CheckIfIsStab(currentActor._type, _selectedSkill._type)
+                                                    , matchupValue);
                             character.ApplyDamage(finalDamage * -1);
                             _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
                         }
@@ -731,11 +770,11 @@ public class TurnBasedSystem : MonoBehaviour
                     {
                         if (_selectedSkill is PhysicalSkillSO)
                         {
-                            attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
+                            attackerStat = currentActor.GetStat(Stats.PhysicalAttack);
                         }
                         else
                         {
-                            attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
+                            attackerStat = currentActor.GetStat(Stats.MagicalAttack);
                         }
 
                         foreach (Character character in _charactersSideA)
@@ -749,24 +788,14 @@ public class TurnBasedSystem : MonoBehaviour
                                 defenderStat = character.GetStat(Stats.MagicalDefense);
                             }
 
-                            finalDamage = Mathf.Clamp((attackerStat - defenderStat) + _selectedSkill._baseForce, _minimumDamage, _maximumDamage);
-
-                            if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
-                                , GetCurrentActor().GetStat(Stats.Luck)
+                            if (CheckIfIsCritical(currentActor.GetStat(Stats.Speed)
+                                , currentActor.GetStat(Stats.Luck)
                                 , character.GetStat(Stats.Speed)))
                             {
-                                finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
                                 isCritical = true;
                             }
                             float weaponBonus = GetBonusByWeaponDamageType(character);
                             hasWeaponBonus = weaponBonus > 1f;
-
-                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation) * weaponBonus));
-
-                            if (character._inDefensiveState)
-                            {
-                                finalDamage = (int)(finalDamage / _defensePenalization);
-                            }
 
                             if (_selectedSkill._causeStatusCondition
                                 && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
@@ -780,6 +809,16 @@ public class TurnBasedSystem : MonoBehaviour
                                 target.ApplyStatModifier(_selectedSkill._statModifier);
                             }
 
+                            GetTypeMatchupBonus(currentActor._type, target._type, out matchupValue);
+
+                            finalDamage = GetDamage(attackerStat
+                                                    , defenderStat
+                                                    , _selectedSkill._baseForce
+                                                    , isCritical
+                                                    , target._inDefensiveState
+                                                    , weaponBonus
+                                                    , CheckIfIsStab(currentActor._type, _selectedSkill._type)
+                                                    , matchupValue);
                             character.ApplyDamage(finalDamage * -1);
                             _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
                         }
@@ -789,33 +828,23 @@ public class TurnBasedSystem : MonoBehaviour
                 {
                     if (_selectedSkill is PhysicalSkillSO)
                     {
-                        attackerStat = GetCurrentActor().GetStat(Stats.PhysicalAttack);
+                        attackerStat = currentActor.GetStat(Stats.PhysicalAttack);
                         defenderStat = target.GetStat(Stats.PhysicalDefense);
                     }
                     else
                     {
-                        attackerStat = GetCurrentActor().GetStat(Stats.MagicalAttack);
+                        attackerStat = currentActor.GetStat(Stats.MagicalAttack);
                         defenderStat = target.GetStat(Stats.MagicalDefense);
                     }
 
-                    finalDamage = Mathf.Clamp((attackerStat - defenderStat) + _selectedSkill._baseForce, _minimumDamage, _maximumDamage);
-
-                    if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
-                        , GetCurrentActor().GetStat(Stats.Luck)
+                    if (CheckIfIsCritical(currentActor.GetStat(Stats.Speed)
+                        , currentActor.GetStat(Stats.Luck)
                         , target.GetStat(Stats.Speed)))
                     {
-                        finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
                         isCritical = true;
                     }
                     float weaponBonus = GetBonusByWeaponDamageType(target);
                     hasWeaponBonus = weaponBonus > 1f;
-
-                    finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation)) * weaponBonus);
-
-                    if (target._inDefensiveState)
-                    {
-                        finalDamage = (int)(finalDamage / _defensePenalization);
-                    }
 
                     if (_selectedSkill._causeStatusCondition
                                 && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
@@ -830,6 +859,15 @@ public class TurnBasedSystem : MonoBehaviour
                         target.ApplyStatModifier(_selectedSkill._statModifier);
                     }
 
+                    GetTypeMatchupBonus(currentActor._type, target._type, out matchupValue);
+                    finalDamage = GetDamage(attackerStat
+                                            , defenderStat
+                                            , _selectedSkill._baseForce
+                                            , isCritical
+                                            , target._inDefensiveState
+                                            , weaponBonus
+                                            , CheckIfIsStab(currentActor._type, _selectedSkill._type)
+                                            , matchupValue);
                     target.ApplyDamage(finalDamage * -1);
                     if (target._side == 0)
                     {
@@ -842,10 +880,24 @@ public class TurnBasedSystem : MonoBehaviour
                 }
             }
         }
-        return SetMessage(finalDamage, isCritical, false, condition, target, hasWeaponBonus);
+        return SetMessage(finalDamage
+                        , isCritical
+                        , false
+                        , condition
+                        , target
+                        , hasWeaponBonus
+                        , false
+                        , matchupValue);
     }
 
-    private string SetMessage(int damage, bool isCritical, bool missed, StatusCondition statusCondition, Character target, bool hasWeaponBonus)
+    private string SetMessage(int damage
+                            , bool isCritical
+                            , bool missed
+                            , StatusCondition statusCondition
+                            , Character target
+                            , bool hasWeaponBonus
+                            , bool confused
+                            , float matchupValue)
     {
         string message = "";
 
@@ -864,14 +916,34 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 message += " O ataquer falhou." + Environment.NewLine;
             }
+            else if (confused)
+            {
+                message += " Como estava confuso acabou atacando a si próprio." + Environment.NewLine;
+                message += $" Causou {damage} de dano a si mesmo." + Environment.NewLine;
+            }
             else
             {
                 message += isCritical ? " Foi um ataque crítico!" + Environment.NewLine : "";
                 message += _selectedSkill._baseForce > 0 ? $" Causou {damage} de dano." + Environment.NewLine : "";
                 message += _selectedSkill is HealingSkillSO ? $" {target._name} teve seus pontos de vida curados." + Environment.NewLine : "";
-                message += target._inDefensiveState ? $" O dano foi reduzido pois estava se defendendo." + Environment.NewLine : "";
+                message += target._inDefensiveState && damage > 0 ? $" O dano foi reduzido pois estava se defendendo." + Environment.NewLine : "";
                 message += statusCondition != StatusCondition.None ? $" O alvo ficou {statusCondition.ToString()}." + Environment.NewLine : "";
                 message += hasWeaponBonus ? $"O golpe recebeu bonus da arma utilizada." + Environment.NewLine : "";
+
+                if(damage > 0)
+                {
+                    switch (matchupValue)
+                    {
+                        case 0.75f:
+                            message += $" O golpe foi pouco efetivo." + Environment.NewLine;
+                            break;
+                        case 1.5f:
+                            message += $" O golpe foi muito efetivo." + Environment.NewLine;
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
         else
@@ -973,7 +1045,14 @@ public class TurnBasedSystem : MonoBehaviour
 
         return bonus;
     }
-    private int GetDamage(int attackerStat, int defenderStat, int skillBaseForce, bool isCritical, bool inDefensiveState, float weaponBonus)
+    private int GetDamage(int attackerStat
+                        , int defenderStat
+                        , int skillBaseForce
+                        , bool isCritical
+                        , bool inDefensiveState
+                        , float weaponBonus
+                        , bool isStab
+                        , float typeBonus)
     {
         int finalDamage = Mathf.Clamp((attackerStat - defenderStat) + _selectedSkill._baseForce, _minimumDamage, _maximumDamage);
 
@@ -982,12 +1061,57 @@ public class TurnBasedSystem : MonoBehaviour
             finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
         }
 
-        finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation)) * weaponBonus);
+        finalDamage = (int)Math.Round(finalDamage * weaponBonus);
+
+        if (isStab)
+        {
+            finalDamage += (int)Math.Round(finalDamage * _stabBonus);
+        }
+
+        finalDamage = (int)Math.Round(finalDamage * typeBonus);
+        finalDamage += (int)Math.Round(finalDamage * Random.Range(_minimumDamageVariation, _maximumDamageVariation));
+
+        if (GetCurrentActor()._currentStatusCondition == StatusCondition.Exausted)
+        {
+            finalDamage -= (int)Math.Round(finalDamage * _exaustedPenalization);
+        }
 
         if (inDefensiveState)
         {
             finalDamage = (int)(finalDamage / _defensePenalization);
         }
         return finalDamage;
+    }
+
+    private bool CheckIfIsStab(ElementType attackerType, ElementType skillType)
+    {
+        if(attackerType != ElementType.Neutral
+            && attackerType == skillType)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void GetTypeMatchupBonus(ElementType attackerType, ElementType defenderType, out float matchupValue)
+    {
+        matchupValue = 1f;
+
+        TypeMatchup typeMatchupAttacker = _typeMatchupList.Find(tm => tm._elementalType == attackerType);
+
+        ElementType isWeak = typeMatchupAttacker._strongAgainst.Find(tm => tm == defenderType);
+        if (isWeak != ElementType.Neutral)
+        {
+            matchupValue = 1.5f;
+            return;
+        }
+
+        TypeMatchup typeMatchupDefender = _typeMatchupList.Find(tm => tm._elementalType == attackerType);
+
+        ElementType isResistent = typeMatchupDefender._resistences.Find(tm => tm == attackerType);
+        if (isWeak != ElementType.Neutral)
+        {
+            matchupValue= 0.75f;
+        }
     }
 }

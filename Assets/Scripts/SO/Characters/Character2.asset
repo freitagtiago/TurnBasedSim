@@ -16,7 +16,7 @@ MonoBehaviour:
   _description: Personagem de teste
   _portrait: {fileID: -1570894509, guid: 04020404e1fb18a4b96fd136dc788449, type: 3}
   _animatorOverride: {fileID: 0}
-  _type: 0
+  _type: 3
   _equipment: {fileID: 11400000, guid: 6e80f319f0d80564d8590c5061faa981, type: 2}
   _stats:
   - _stat: 0
