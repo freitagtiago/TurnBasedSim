@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -10,6 +11,7 @@ public class CharacterUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _characterName;
     [SerializeField] private TextMeshProUGUI _healthPoints;
     [SerializeField] private TextMeshProUGUI _speacialPoints;
+    [SerializeField] private TextMeshProUGUI _modifierWarning;
     [SerializeField] private Image _sprite;
     private Character _character;
 
@@ -20,12 +22,14 @@ public class CharacterUI : MonoBehaviour
         _sprite.sprite = character._baseCharacter._portrait;
         _healthPoints.text = "HP: " + character._currentHP.ToString();
         _speacialPoints.text = "SP: " + character._currentSP.ToString();
+        _modifierWarning.text = GetModifierText();
     }
 
     public void UpdateUI()
     {
         _healthPoints.text = "HP: " + _character._currentHP.ToString();
         _speacialPoints.text = "SP: " + _character._currentSP.ToString();
+        _modifierWarning.text = GetModifierText();
 
 
         switch (_character._currentStatusCondition)
@@ -55,5 +59,30 @@ public class CharacterUI : MonoBehaviour
                 _characterName.color = Color.white;
                 break;
         }
+    }
+
+    private string GetModifierText()
+    {
+        string message = "";
+
+        foreach(StatModifier modifier in _character._statsModifiers)
+        {
+            if (modifier._isPermanent)
+            {
+                message += $"{modifier._stat} : {modifier._stage}" + Environment.NewLine;
+            }
+            else
+            {
+                if(modifier._value < 0)
+                {
+                    message += $"<color=#FF0000>{modifier._stat} : {modifier._stage}</color>" + Environment.NewLine;
+                }
+                else
+                {
+                    message += $"<color=#0000FF>{modifier._stat} : {modifier._stage}</color>" + Environment.NewLine;
+                }
+            }
+        }
+        return message;
     }
 }

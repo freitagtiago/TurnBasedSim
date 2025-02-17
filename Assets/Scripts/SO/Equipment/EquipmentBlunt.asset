@@ -19,8 +19,8 @@ MonoBehaviour:
     _value: 15
     _isPermanent: 1
     _remainingTurns: 0
-    _modifierValue: 0
-    _modifierPercent: 0
+    _stage: 1
+    _modifierFactor: 1
     _minumumTurns: 2
     _maximumTurns: 6
   _weaponDamageType: 1

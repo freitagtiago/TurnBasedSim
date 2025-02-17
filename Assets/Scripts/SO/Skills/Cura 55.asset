@@ -9,29 +9,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56b5b5fa2fc79424293a5bf83bb85fcb, type: 3}
-  m_Name: MagicalSkill
+  m_Script: {fileID: 11500000, guid: bb7424debb4b3e54c9703efbbb793829, type: 3}
+  m_Name: Cura 55
   m_EditorClassIdentifier: 
-  _name: "Ataque M\xE1gico Forte"
-  _description: magia
+  _name: "Cura M\xE9dia"
+  _description: teste inicial
   _type: 0
   _cost: 10
-  _accuracy: 90
-  _baseForce: 65
+  _accuracy: 100
+  _baseForce: 0
   _affectAll: 0
   _isBasicSkill: 0
   _causeStatusCondition: 0
   _statusCondition: 0
   _statusConditionChance: 0
-  _causeDebuff: 0
-  _statDebuff: 0
-  _debuffChance: 15
-  _statModifier:
-    _stat: 3
-    _value: 0
-    _isPermanent: 0
-    _remainingTurns: 0
-    _modifierValue: 0
-    _modifierPercent: 10
-    _minumumTurns: 2
-    _maximumTurns: 6
+  _isPercent: 1
+  _canRevive: 0
+  _cureValue: 55
+  _cureStatusCondition: 0
+  _removeDebuffs: 0

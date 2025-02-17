@@ -19,8 +19,8 @@ public class SkillSO : ScriptableObject
     public int _statusConditionChance = 0;
 
     [Header("Debuff Condition Chance")]
-    public bool _causeDebuff = false;
+    public bool _applyStatModifier = false;
     public Stats _statDebuff;
-    public int _debuffChance = 0;
+    public int _modifierChance = 0;
     public StatModifier _statModifier;
 }

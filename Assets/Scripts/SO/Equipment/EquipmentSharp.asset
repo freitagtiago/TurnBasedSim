@@ -19,4 +19,9 @@ MonoBehaviour:
     _value: 15
     _isPermanent: 1
     _remainingTurns: 0
+    _stage: 1
+    _modifierFactor: 1
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _weaponDamageType: 0
   _basicSkill: {fileID: 11400000, guid: 1cbff1929c14a24438427c4f819aa395, type: 2}

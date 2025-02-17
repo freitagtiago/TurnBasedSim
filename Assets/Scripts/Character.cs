@@ -28,6 +28,8 @@ public class Character
 
     public int _side = 0;
     public bool _inDefensiveState = false;
+    public int _maxHP { get; private set; }
+    public int _maxSP { get; private set; }
 
     public void SetupCharacter(CharacterSO baseCharacter, int side)
     {
@@ -47,7 +49,9 @@ public class Character
         }
 
         _currentHP = _baseCharacter.GetStat(Stats.HealthPoints)._value + GetStatModifier(Stats.HealthPoints);
+        _maxHP = _currentHP;
         _currentSP = _baseCharacter.GetStat(Stats.SpecialPoints)._value;
+        _maxSP = _baseCharacter.GetStat(Stats.SpecialPoints)._value;
     }
 
    public void ApplyStatusCondition(StatusCondition condition)
@@ -73,18 +77,59 @@ public class Character
     {
         if (!statModifier._isPermanent)
         {
-            statModifier._remainingTurns = Mathf.Clamp(statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
+            bool statAlreadyExist = false;
+            StatModifier removeModifier = null;
+            foreach(StatModifier modifier in _statsModifiers)
+            {
+                if(modifier._stat == statModifier._stat
+                    && !modifier._isPermanent)
+                {
+                    statAlreadyExist = true;
 
-            if(statModifier._modifierValue != 0)
-            {
-                statModifier._value = statModifier._modifierValue;
+                    if(statModifier._modifierFactor == modifier._modifierFactor)
+                    {
+                        if (modifier._stage < 4)
+                        {
+                            modifier._stage++;
+                            modifier._remainingTurns = Mathf.Clamp(statModifier._remainingTurns + statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
+
+                            statModifier._value = (int)(GetStat(statModifier._stat) * (12.5f * statModifier._stage * modifier._modifierFactor)) / 100;
+                        }
+                        else
+                        {
+                            modifier._remainingTurns = Mathf.Clamp(statModifier._remainingTurns + statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
+                        }
+                    }
+                    else
+                    {
+                        modifier._stage--;
+                        if(modifier._stage <= 0)
+                        {
+                            removeModifier = modifier;
+                        }
+                        else
+                        {
+                            modifier._value = (int)(GetStat(modifier._stat) * (12.5f * modifier._stage * modifier._modifierFactor)) / 100;
+                        }
+                    }
+                    break;
+                }
             }
-            else
+            if (!statAlreadyExist)
             {
-                statModifier._value = (GetStat(statModifier._stat) * statModifier._modifierPercent) / 100;
+                statModifier._remainingTurns = Mathf.Clamp(statModifier._maximumTurns * 2 - (GetStat(Stats.Luck) / 10), statModifier._minumumTurns, statModifier._maximumTurns);
+                statModifier._value = (int)(GetStat(statModifier._stat) * (12.5f * statModifier._stage * statModifier._modifierFactor)) / 100;
+                _statsModifiers.Add(statModifier);
+            }
+            if(removeModifier != null)
+            {
+                _statsModifiers.Remove(removeModifier);
             }
         }
-        _statsModifiers.Add(statModifier);
+        else
+        {
+            _statsModifiers.Add(statModifier);
+        }
     }
 
     public int GetStat(Stats statToGet)
@@ -128,8 +173,7 @@ public class Character
 
     public void ApplyDamage(int damage)
     {
-        int maxHP = _baseCharacter.GetStat(Stats.HealthPoints)._value + GetStatModifier(Stats.HealthPoints);
-        _currentHP = Mathf.Clamp(_currentHP + damage, 0, maxHP);
+        _currentHP = Mathf.Clamp(_currentHP + damage, 0, _maxHP);
     }
 
     public bool HandleStatusCondition()
@@ -203,7 +247,8 @@ public class Character
 
             _statsModifiers[i]._remainingTurns--;
 
-            if (_statsModifiers[i]._remainingTurns == 0) 
+            if (_statsModifiers[i]._remainingTurns == 0
+                || _statsModifiers[i]._stage <= 0) 
             {
                 _statsModifiers.RemoveAt(i);
             }
@@ -242,7 +287,7 @@ public class Character
     {
         for (int i = _statsModifiers.Count - 1; i >= 0; i--)
         {
-            if (_statsModifiers[i]._isPermanent
+            if (!_statsModifiers[i]._isPermanent
                 && _statsModifiers[i]._value < 0)
             {
                 _statsModifiers.RemoveAt(i);
@@ -252,7 +297,6 @@ public class Character
 
     public void RecoverSP(int valueToRecover)
     {
-        int maxSP = _baseCharacter.GetStat(Stats.SpecialPoints)._value + GetStatModifier(Stats.SpecialPoints);
-        _currentSP = Mathf.Clamp( _currentSP + valueToRecover, 0, maxSP);
+        _currentSP = Mathf.Clamp( _currentSP + valueToRecover, 0, _maxSP);
     }
 }

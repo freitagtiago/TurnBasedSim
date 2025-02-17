@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6e6e1462bc0083944bb68b22ad2ce5ec, type: 3}
-  m_Name: PhysicalSkill
+  m_Name: "Ataque F\xEDsico Forte"
   m_EditorClassIdentifier: 
   _name: "Ataque F\xEDsico Forte"
   _description: fisico
@@ -23,15 +23,16 @@ MonoBehaviour:
   _causeStatusCondition: 0
   _statusCondition: 0
   _statusConditionChance: 0
-  _causeDebuff: 0
+  _applyStatModifier: 1
+  _modifierFactor: 1
   _statDebuff: 0
-  _debuffChance: 15
+  _modifierChance: 0
   _statModifier:
     _stat: 4
     _value: 0
     _isPermanent: 0
     _remainingTurns: 0
-    _modifierValue: 0
-    _modifierPercent: 10
+    _stage: 1
+    _modifierFactor: -1
     _minumumTurns: 2
     _maximumTurns: 6

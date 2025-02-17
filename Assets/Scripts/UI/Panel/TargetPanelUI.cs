@@ -86,16 +86,69 @@ public class TargetPanelUI : MonoBehaviour, IPanelUI
                     }
                 }
             }
+            else if(skill is StatSkillSO)
+            {
+                StatSkillSO statSkill = skill as StatSkillSO;
+                if (statSkill._statModifier._modifierFactor < 0)
+                {
+                    if (TurnBasedSystem.Instance.GetCurrentActor()._side == 0)
+                    {
+                        foreach (Character character in TurnBasedSystem.Instance._charactersSideB)
+                        {
+                            if (character._currentHP > 0)
+                            {
+                                TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
+                                targetButton.SetupTarget(character);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (Character character in TurnBasedSystem.Instance._charactersSideA)
+                        {
+                            if (character._currentHP > 0)
+                            {
+                                TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
+                                targetButton.SetupTarget(character);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (TurnBasedSystem.Instance.GetCurrentActor()._side == 0)
+                    {
+                        foreach (Character character in TurnBasedSystem.Instance._charactersSideA)
+                        {
+                            if (character._currentHP > 0)
+                            {
+                                TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
+                                targetButton.SetupTarget(character);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (Character character in TurnBasedSystem.Instance._charactersSideB)
+                        {
+                            if (character._currentHP > 0)
+                            {
+                                TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
+                                targetButton.SetupTarget(character);
+                            }
+                        }
+                    }
+                }
+            }
             else if (skill is MagicalSkillSO
                       || skill is PhysicalSkillSO
-                      || skill is StatSkillSO
                       || skill is StatusConditionSkillSO)
             {
                 if (TurnBasedSystem.Instance.GetCurrentActor()._side == 0)
                 {
                     foreach (Character character in TurnBasedSystem.Instance._charactersSideB)
                     {
-                        if(character._currentHP > 0)
+                        if (character._currentHP > 0)
                         {
                             TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
                             targetButton.SetupTarget(character);
@@ -106,7 +159,7 @@ public class TargetPanelUI : MonoBehaviour, IPanelUI
                 {
                     foreach (Character character in TurnBasedSystem.Instance._charactersSideA)
                     {
-                        if(character._currentHP > 0)
+                        if (character._currentHP > 0)
                         {
                             TargetButtonUI targetButton = Instantiate(_targetButtonPrefab, _targetButtonsParent);
                             targetButton.SetupTarget(character);

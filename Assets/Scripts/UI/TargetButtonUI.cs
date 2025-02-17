@@ -1,7 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 public class TargetButtonUI : MonoBehaviour
 {
@@ -12,6 +16,53 @@ public class TargetButtonUI : MonoBehaviour
     {
         _target = target;
         _targetName.text = _target._name;
+
+        GetComponent<Button>().interactable = !BlockInteraction();
+    }
+
+    private bool BlockInteraction()
+    {
+        SkillSO skill = TurnBasedSystem.Instance._selectedSkill;
+
+        if (skill is HealingSkillSO
+            && _target._currentHP == _target._maxHP)
+        {
+            return true;
+        }
+
+        if(skill is StatSkillSO)
+        {
+            StatSkillSO statSkill = skill as StatSkillSO;
+
+            foreach(StatModifier modifier in _target._statsModifiers)
+            {
+                if(statSkill._statModifier._modifierFactor > 1
+                    && !modifier._isPermanent
+                    && statSkill._statModifier._stat == modifier._stat
+                    && modifier._stage == 4
+                    && modifier._modifierFactor > 1)
+                {
+                    return true;
+                }
+                else if (statSkill._statModifier._modifierFactor < 1
+                    && !modifier._isPermanent
+                    && statSkill._statModifier._stat == modifier._stat
+                    && modifier._stage == 4
+                    && modifier._modifierFactor < 1)
+                {
+                    return true;
+                }
+            }
+        }
+
+        if(skill is StatusCondition)
+        {
+            if(_target._currentStatusCondition != StatusCondition.None)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void SelectTarget()

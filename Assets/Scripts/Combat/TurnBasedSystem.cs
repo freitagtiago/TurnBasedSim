@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Unity.Mathematics;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.VersionControl;
@@ -33,6 +34,17 @@ public class TurnBasedSystem : MonoBehaviour
     public ItemSO _selectedItem { get; private set; }
     public Character _selectedCharacter { get; private set; }
 
+    [Header("Combat Modifiers")]
+    [SerializeField] private float _exaustedPenalization = 0.3f;
+    [SerializeField] private float _defensePenalization = 2f;
+    [SerializeField] private float _criticalBonus = 1.3f;
+    [SerializeField] private float _criticalFator = 1.5f;
+    [SerializeField] private float _stabBonus = 1.3f;
+    [SerializeField] private float _weaponDamageBonus = 0.3f;
+    [SerializeField] private float _minimumDamageVariation = 0.3f;
+    [SerializeField] private float _maximumDamageVariation = 1f;
+    [SerializeField] private int _minimumDamage = 15;
+    [SerializeField] private int _maximumDamage = 9999;
 
     private void Awake()
     {
@@ -135,9 +147,11 @@ public class TurnBasedSystem : MonoBehaviour
         else
         {
             bool currentActorDefined = false;
-
-            while (!currentActorDefined)
+            int iterations = 0; 
+            while (!currentActorDefined
+                || iterations > 15)
             {
+                iterations++;
                 _currentTurn++;
                 if (_currentTurn >= _actionOrder.Count)
                 {
@@ -160,14 +174,7 @@ public class TurnBasedSystem : MonoBehaviour
                             yield return new WaitForSeconds(3f);
                         }
 
-                        if (_actionOrder[_currentTurn]._side == 0)
-                        {
-                            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, _actionOrder[_currentTurn]), 0);
-                        }
-                        else
-                        {
-                            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, _actionOrder[_currentTurn]), 1);
-                        }
+                        UpdateCharacterSlotUI();
                     }
                     else
                     {
@@ -185,6 +192,11 @@ public class TurnBasedSystem : MonoBehaviour
                         yield return new WaitForSeconds(3f);
                     }
                 }
+            }
+
+            if(iterations > 15)
+            {
+                Debug.LogError("INFINITE LOOP");
             }
             SetTurnAction();
         }
@@ -300,6 +312,7 @@ public class TurnBasedSystem : MonoBehaviour
         GetCurrentActor().ReduceSP(_selectedSkill._cost);
         UpdateCharacterSlotUI();
         string message = CalculateAndApplyDamage(target);
+        UpdateTargetCharacterSlotUI(target._side, target);
         _selectedSkill = null;
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
@@ -310,7 +323,7 @@ public class TurnBasedSystem : MonoBehaviour
         string message = $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em todos";
 
         CalculateAndApplyDamage(null);
-
+        UpdateTargetCharacterSlotUI(0, null);
         _selectedSkill = null;
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
@@ -325,6 +338,7 @@ public class TurnBasedSystem : MonoBehaviour
             foreach(Character character in _charactersSideA)
             {
                 character.ApplyItem(_selectedItem);
+                UpdateTargetCharacterSlotUI(character._side, character);
             }
         }
         else
@@ -332,6 +346,7 @@ public class TurnBasedSystem : MonoBehaviour
             foreach (Character character in _charactersSideB)
             {
                 character.ApplyItem(_selectedItem);
+                UpdateTargetCharacterSlotUI(character._side, character);
             }
         }
 
@@ -348,7 +363,7 @@ public class TurnBasedSystem : MonoBehaviour
         message = $"{GetCurrentActor()._name} usou o item {_selectedItem._name} em {target._name}";
 
         target.ApplyItem(_selectedItem);
-        UpdateCharacterSlotUI();
+        UpdateTargetCharacterSlotUI(target._side, target);
         _selectedItem = null;
 
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
@@ -440,7 +455,15 @@ public class TurnBasedSystem : MonoBehaviour
         bool hasWeaponBonus = false;
         StatusCondition condition = StatusCondition.None;
 
-        if(_selectedSkill is HealingSkillSO)
+        if (GetCurrentActor()._currentStatusCondition == StatusCondition.Blind)
+        {
+            if (Random.Range(0, 101) > 50)
+            {
+                return SetMessage(0, false, true, condition, target, false);
+            }
+        }
+
+        if (_selectedSkill is HealingSkillSO)
         {
             if (!_selectedSkill._affectAll)
             {
@@ -545,7 +568,7 @@ public class TurnBasedSystem : MonoBehaviour
             {
                 return SetMessage(0, false, true, condition, target, false);
             }
-            
+
             if (_selectedSkill is StatSkillSO)
             {
                 if (!_selectedSkill._affectAll)
@@ -638,9 +661,9 @@ public class TurnBasedSystem : MonoBehaviour
                 int attackerStat = 0;
                 int defenderStat = 0;
 
-                if(target == null)
+                if (target == null)
                 {
-                    if(GetCurrentActor()._side == 0)
+                    if (GetCurrentActor()._side == 0)
                     {
                         if (_selectedSkill is PhysicalSkillSO)
                         {
@@ -668,18 +691,23 @@ public class TurnBasedSystem : MonoBehaviour
                                 , GetCurrentActor().GetStat(Stats.Luck)
                                 , character.GetStat(Stats.Speed)))
                             {
-                                finalDamage = (int)Math.Round(finalDamage * 1.3f);
+                                finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
                                 isCritical = true;
                             }
 
                             float weaponBonus = GetBonusByWeaponDamageType(character);
                             hasWeaponBonus = weaponBonus > 1f;
 
-                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f) * weaponBonus));
+                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation) * weaponBonus));
+
+                            if(GetCurrentActor()._currentStatusCondition == StatusCondition.Exausted)
+                            {
+                                finalDamage -= (int)(finalDamage * _exaustedPenalization);
+                            }
 
                             if (character._inDefensiveState)
                             {
-                                finalDamage = finalDamage / 2;
+                                finalDamage = (int)(finalDamage / _defensePenalization);
                             }
 
                             if (_selectedSkill._causeStatusCondition
@@ -689,14 +717,14 @@ public class TurnBasedSystem : MonoBehaviour
                                 character.ApplyStatusCondition(condition);
                             }
 
-                            if (_selectedSkill._causeDebuff
-                                && Random.Range(0, 101) < _selectedSkill._debuffChance)
+                            if (_selectedSkill._applyStatModifier
+                                && Random.Range(0, 101) < _selectedSkill._modifierChance)
                             {
                                 character.ApplyStatModifier(_selectedSkill._statModifier);
                             }
 
                             character.ApplyDamage(finalDamage * -1);
-                           _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
+                            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
                         }
                     }
                     else
@@ -721,23 +749,23 @@ public class TurnBasedSystem : MonoBehaviour
                                 defenderStat = character.GetStat(Stats.MagicalDefense);
                             }
 
-                            finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
+                            finalDamage = Mathf.Clamp((attackerStat - defenderStat) + _selectedSkill._baseForce, _minimumDamage, _maximumDamage);
 
                             if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
                                 , GetCurrentActor().GetStat(Stats.Luck)
                                 , character.GetStat(Stats.Speed)))
                             {
-                                finalDamage = (int)Math.Round(finalDamage * 1.3f);
+                                finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
                                 isCritical = true;
                             }
                             float weaponBonus = GetBonusByWeaponDamageType(character);
                             hasWeaponBonus = weaponBonus > 1f;
 
-                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f) * weaponBonus));
+                            finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation) * weaponBonus));
 
                             if (character._inDefensiveState)
                             {
-                                finalDamage = finalDamage / 2;
+                                finalDamage = (int)(finalDamage / _defensePenalization);
                             }
 
                             if (_selectedSkill._causeStatusCondition
@@ -746,8 +774,8 @@ public class TurnBasedSystem : MonoBehaviour
                                 condition = _selectedSkill._statusCondition;
                                 target.ApplyStatusCondition(condition);
                             }
-                            if (_selectedSkill._causeDebuff
-                                 && Random.Range(0, 101) < _selectedSkill._debuffChance)
+                            if (_selectedSkill._applyStatModifier
+                                 && Random.Range(0, 101) < _selectedSkill._modifierChance)
                             {
                                 target.ApplyStatModifier(_selectedSkill._statModifier);
                             }
@@ -770,23 +798,23 @@ public class TurnBasedSystem : MonoBehaviour
                         defenderStat = target.GetStat(Stats.MagicalDefense);
                     }
 
-                    finalDamage = (attackerStat - defenderStat) + _selectedSkill._baseForce;
+                    finalDamage = Mathf.Clamp((attackerStat - defenderStat) + _selectedSkill._baseForce, _minimumDamage, _maximumDamage);
 
                     if (CheckIfIsCritical(GetCurrentActor().GetStat(Stats.Speed)
                         , GetCurrentActor().GetStat(Stats.Luck)
                         , target.GetStat(Stats.Speed)))
                     {
-                        finalDamage = (int)Math.Round(finalDamage * 1.3f);
+                        finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
                         isCritical = true;
                     }
                     float weaponBonus = GetBonusByWeaponDamageType(target);
                     hasWeaponBonus = weaponBonus > 1f;
 
-                    finalDamage += (int)Math.Round(finalDamage * (Random.Range(0.3f, 1f)) * weaponBonus);
+                    finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation)) * weaponBonus);
 
                     if (target._inDefensiveState)
                     {
-                        finalDamage = finalDamage / 2;
+                        finalDamage = (int)(finalDamage / _defensePenalization);
                     }
 
                     if (_selectedSkill._causeStatusCondition
@@ -796,8 +824,8 @@ public class TurnBasedSystem : MonoBehaviour
                         target.ApplyStatusCondition(condition);
                     }
 
-                    if(_selectedSkill._causeDebuff 
-                        && Random.Range(0, 101) < _selectedSkill._debuffChance)
+                    if (_selectedSkill._applyStatModifier
+                        && Random.Range(0, 101) < _selectedSkill._modifierChance)
                     {
                         target.ApplyStatModifier(_selectedSkill._statModifier);
                     }
@@ -855,7 +883,7 @@ public class TurnBasedSystem : MonoBehaviour
 
     private bool CheckIfIsCritical(int attackerSpeed, int attackerLucky, int defenderSpeed)
     {
-        int criticalChance = Mathf.Clamp((int)Math.Round((attackerSpeed / defenderSpeed) * 1.5f + attackerLucky * 0.1f), 0, 100);
+        int criticalChance = Mathf.Clamp((int)Math.Round((attackerSpeed / defenderSpeed) * _criticalFator + attackerLucky * 0.1f), 0, 100);
         return Random.Range(0,101) <= criticalChance;
     }
 
@@ -873,6 +901,51 @@ public class TurnBasedSystem : MonoBehaviour
         else
         {
             _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, _actionOrder[_currentTurn]), 1);
+        }
+    }
+
+    private void UpdateTargetCharacterSlotUI(int side, Character target)
+    {
+        if(target != null)
+        {
+            if (target._side == 0)
+            {
+                _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, target), 0);
+            }
+            else
+            {
+                _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, target), 1);
+            }
+        }
+        else
+        {
+            int sideToUpdade = 0;
+            if(_selectedSkill is HealingSkillSO)
+            {
+                sideToUpdade = _actionOrder[_currentTurn]._side;
+            }
+            else
+            {
+                if(_actionOrder[_currentTurn]._side == 0)
+                {
+                    sideToUpdade = 1;
+                }
+            }
+
+            if(sideToUpdade == 0)
+            {
+                foreach(Character character in _charactersSideA)
+                {
+                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
+                }
+            }
+            else
+            {
+                foreach (Character character in _charactersSideB)
+                {
+                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
+                }
+            }
         }
     }
 
@@ -895,10 +968,26 @@ public class TurnBasedSystem : MonoBehaviour
 
         if (nextDamageType == deffender)
         {
-            bonus += 0.3f;
+            bonus += _weaponDamageBonus;
         }
 
         return bonus;
     }
+    private int GetDamage(int attackerStat, int defenderStat, int skillBaseForce, bool isCritical, bool inDefensiveState, float weaponBonus)
+    {
+        int finalDamage = Mathf.Clamp((attackerStat - defenderStat) + _selectedSkill._baseForce, _minimumDamage, _maximumDamage);
 
+        if (isCritical)
+        {
+            finalDamage = (int)Math.Round(finalDamage * _criticalBonus);
+        }
+
+        finalDamage += (int)Math.Round(finalDamage * (Random.Range(_minimumDamageVariation, _maximumDamageVariation)) * weaponBonus);
+
+        if (inDefensiveState)
+        {
+            finalDamage = (int)(finalDamage / _defensePenalization);
+        }
+        return finalDamage;
+    }
 }

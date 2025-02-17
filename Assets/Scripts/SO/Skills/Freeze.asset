@@ -9,26 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6d31ea78c778fd4696cfd62e707b944, type: 3}
-  m_Name: StatSkill2
+  m_Script: {fileID: 11500000, guid: 7096666d2f043a54d8499ce0f47d3268, type: 3}
+  m_Name: Freeze
   m_EditorClassIdentifier: 
-  _name: "Debuff de Defesa F\xEDsica"
-  _description: debuff
+  _name: Freeze
+  _description: freeze
   _type: 0
-  _cost: 5
-  _accuracy: 90
+  _cost: 15
+  _accuracy: 75
   _baseForce: 0
   _affectAll: 0
   _isBasicSkill: 0
   _causeStatusCondition: 0
-  _statusCondition: 0
+  _statusCondition: 7
   _statusConditionChance: 0
-  _statModifier:
-    _stat: 3
-    _value: 0
-    _isPermanent: 0
-    _remainingTurns: 0
-    _modifierValue: -20
-    _modifierPercent: 0
-    _minumumTurns: 2
-    _maximumTurns: 6
+  _minimumTurnCount: 1
+  _maximumTurnCount: 10
