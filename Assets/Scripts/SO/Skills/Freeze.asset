@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: Freeze
   m_EditorClassIdentifier: 
   _name: Freeze
-  _description: freeze
+  _description: "Uma energia congelando circula o alvo podendo congel\xE1-lo. O alvo
+    n\xE3o ir\xE1 atacar at\xE9 se descongelar e ir\xE1 perder 5% de vida a cada
+    turno."
   _type: 1
   _cost: 15
   _accuracy: 75
@@ -35,5 +37,10 @@ MonoBehaviour:
     _modifierFactor: 0
     _minumumTurns: 2
     _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []
   _minimumTurnCount: 1
   _maximumTurnCount: 10

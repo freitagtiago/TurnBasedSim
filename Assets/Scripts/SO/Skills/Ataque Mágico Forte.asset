@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: "Ataque M\xE1gico Forte"
   m_EditorClassIdentifier: 
   _name: "Ataque M\xE1gico Forte"
-  _description: magia
+  _description: "Uma grande esfera de energia fria se materializa sobre o personagem.
+    Possui uma pequena chance de reduzir a defesa m\xE1gica do inimigo."
   _type: 1
   _cost: 10
   _accuracy: 90
@@ -24,10 +25,10 @@ MonoBehaviour:
   _statusCondition: 0
   _statusConditionChance: 0
   _applyStatModifier: 1
-  _statDebuff: 0
-  _modifierChance: 0
+  _statDebuff: 5
+  _modifierChance: 10
   _statModifier:
-    _stat: 3
+    _stat: 5
     _value: 0
     _isPermanent: 0
     _remainingTurns: 0
@@ -35,3 +36,8 @@ MonoBehaviour:
     _modifierFactor: -1
     _minumumTurns: 2
     _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []

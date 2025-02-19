@@ -12,6 +12,9 @@ public class CharacterUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _healthPoints;
     [SerializeField] private TextMeshProUGUI _speacialPoints;
     [SerializeField] private TextMeshProUGUI _modifierWarning;
+    [SerializeField] private TextMeshProUGUI _type;
+    [SerializeField] private Slider _hpSlider;
+    [SerializeField] private Slider _spSlider;
     [SerializeField] private Image _sprite;
     private Character _character;
 
@@ -20,16 +23,48 @@ public class CharacterUI : MonoBehaviour
         _character = character;
         _characterName.text = character._name;
         _sprite.sprite = character._baseCharacter._portrait;
-        _healthPoints.text = "HP: " + character._currentHP.ToString();
-        _speacialPoints.text = "SP: " + character._currentSP.ToString();
+
+        _type.color = Utils.HexToColor(Utils.GetHexCodeForElement(_character._type));
+        _type.text = _character._type.ToString();
+
+        _hpSlider.maxValue = _character._currentHP;
+        _spSlider.maxValue = _character._maxSP;
+
+        _healthPoints.text = $"HP: {_character._currentHP}/{_character._maxHP}";
+        _hpSlider.value = _character._currentHP;
+
+        _speacialPoints.text = $"HP: {_character._currentSP}/{_character._maxSP}";
+        _spSlider.value = _character._currentSP;
+
         _modifierWarning.text = GetModifierText();
     }
 
     public void UpdateUI()
     {
-        _healthPoints.text = "HP: " + _character._currentHP.ToString();
-        _speacialPoints.text = "SP: " + _character._currentSP.ToString();
+        _healthPoints.text = $"HP: {_character._currentHP}/{_character._maxHP}";
+        _hpSlider.value = _character._currentHP;
+
+        _speacialPoints.text = $"HP: {_character._currentSP}/{_character._maxSP}";
+        _spSlider.value = _character._currentSP;
         _modifierWarning.text = GetModifierText();
+
+        if (_hpSlider.value == 0)
+        {
+            _hpSlider.fillRect.gameObject.SetActive(false);
+        }
+        else
+        {
+            _hpSlider.fillRect.gameObject.SetActive(true);
+        }
+
+        if (_spSlider.value == 0)
+        {
+            _spSlider.fillRect.gameObject.SetActive(false);
+        }
+        else
+        {
+            _spSlider.fillRect.gameObject.SetActive(true);
+        }
 
 
         switch (_character._currentStatusCondition)
@@ -69,13 +104,14 @@ public class CharacterUI : MonoBehaviour
         {
             if (modifier._isPermanent)
             {
-                message += $"{modifier._stat} : {modifier._stage}" + Environment.NewLine;
+                continue;
+                //message += $"{modifier._stat} : {modifier._stage}" + Environment.NewLine;
             }
             else
             {
                 if(modifier._value < 0)
                 {
-                    message += $"<color=#FF0000>{modifier._stat} : {modifier._stage}</color>" + Environment.NewLine;
+                    message += $"<color=#F3BEBE>{modifier._stat} : {modifier._stage}</color>" + Environment.NewLine;
                 }
                 else
                 {

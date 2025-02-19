@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Poison
   m_EditorClassIdentifier: 
   _name: Poison
-  _description: poisoned
-  _type: 0
+  _description: "L\xEDquido t\xF3xico com capacidade de envenenar o alvo. Essa condi\xE7\xE3o
+    reduz pouco a pouco a vida do alvo durante alguns turnos."
+  _type: 7
   _cost: 15
   _accuracy: 75
   _baseForce: 0
@@ -23,5 +24,22 @@ MonoBehaviour:
   _causeStatusCondition: 0
   _statusCondition: 1
   _statusConditionChance: 0
+  _applyStatModifier: 0
+  _statDebuff: 0
+  _modifierChance: 0
+  _statModifier:
+    _stat: 0
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []
   _minimumTurnCount: 1
   _maximumTurnCount: 5

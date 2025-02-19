@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
+using UnityEngine.UI;
 
 public class TurnBasedSystemUI : MonoBehaviour
 {
@@ -19,6 +21,12 @@ public class TurnBasedSystemUI : MonoBehaviour
     [SerializeField] private GameObject _itenPanelUI;
     [SerializeField] private GameObject _specialPanelUI;
     [SerializeField] private GameObject _targetPanelUI;
+
+    [SerializeField] private TextMeshProUGUI _actionPointsSideA;
+    [SerializeField] private TextMeshProUGUI _actionPointsSideB;
+    [SerializeField] private GameObject _specialActionButton;
+    [SerializeField] private Slider _sliderA;
+    [SerializeField] private Slider _sliderB;
 
     public void SetupCharacterSlot(Character character, int index,int side)
     {
@@ -76,6 +84,17 @@ public class TurnBasedSystemUI : MonoBehaviour
         _itenPanelUI.GetComponent<IPanelUI>().ClosePanel();
         _specialPanelUI.GetComponent<IPanelUI>().ClosePanel();
         _actionPanelUI.GetComponent<IPanelUI>().OpenPanel();
+
+        if(TurnBasedSystem.Instance._currentActionPointsSideA > 100
+            && !TurnBasedSystem.Instance._isCharging
+            && TurnBasedSystem.Instance.GetCurrentActor() == TurnBasedSystem.Instance._charactersSideA[0])
+        {
+            _specialActionButton.SetActive(true);
+        }
+        else
+        {
+            _specialActionButton.SetActive(false);
+        }
     }
 
     public void SetupEnemyAction(Character currentActor)
@@ -153,4 +172,11 @@ public class TurnBasedSystemUI : MonoBehaviour
         TurnBasedSystem.Instance.EndBattle();
     }
 
+    public void UpdateActionPointsUI()
+    {
+        _actionPointsSideA.text = $"{TurnBasedSystem.Instance._currentActionPointsSideA}/{TurnBasedSystem.Instance._maxActionPoints}";
+        _sliderA.value = TurnBasedSystem.Instance._currentActionPointsSideA;
+        _actionPointsSideB.text = $"{TurnBasedSystem.Instance._currentActionPointsSideB}/{TurnBasedSystem.Instance._maxActionPoints}";
+        _sliderB.value = TurnBasedSystem.Instance._currentActionPointsSideB;
+    }
 }

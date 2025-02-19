@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: "Debuff de Defesa F\xEDsica"
   m_EditorClassIdentifier: 
   _name: "Debuff de Defesa F\xEDsica"
-  _description: debuff
+  _description: "O alvo se distrai com a movimenta\xE7\xE3o do personagem, deixando-o
+    desconcentrado e reduzindo sua defesa f\xEDsica."
   _type: 0
   _cost: 5
   _accuracy: 90
@@ -24,7 +25,6 @@ MonoBehaviour:
   _statusCondition: 0
   _statusConditionChance: 0
   _applyStatModifier: 0
-  _modifierFactor: -1
   _statDebuff: 0
   _modifierChance: 0
   _statModifier:
@@ -36,3 +36,8 @@ MonoBehaviour:
     _modifierFactor: -1
     _minumumTurns: 2
     _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []

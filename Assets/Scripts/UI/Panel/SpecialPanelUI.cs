@@ -26,4 +26,14 @@ public class SpecialPanelUI : MonoBehaviour, IPanelUI
             panel.GetComponent<IPanelUI>()?.ClosePanel();
         }
     }
+
+    public void SpecialAttackButton()
+    {
+        TurnBasedSystem.Instance.SetSpecialAction(false);
+    }
+
+    public void BluffButton()
+    {
+        TurnBasedSystem.Instance.SetSpecialAction(true);
+    }
 }

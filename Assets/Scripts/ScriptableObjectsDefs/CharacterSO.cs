@@ -17,7 +17,7 @@ public class CharacterSO : ScriptableObject
     public List<Stat> _stats = new List<Stat> ();
     public List<SkillSO> _availableSkills = new List<SkillSO> ();
     public List<ItemSO> _availableItens = new List<ItemSO> ();
-
+    public SkillSO _specialSkill;
     public Stat GetStat(Stats statToGet)
     {
         foreach(Stat stat in _stats)

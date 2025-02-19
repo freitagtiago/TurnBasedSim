@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Confuse
   m_EditorClassIdentifier: 
   _name: Confuse
-  _description: burn
-  _type: 0
+  _description: "Um raio de luz misterioso que afeta a consci\xEAncia do alvo, deixando-o
+    confuso. Se confuso, o alvo pode causar danos a si mesmo."
+  _type: 5
   _cost: 15
   _accuracy: 75
   _baseForce: 0
@@ -22,6 +23,23 @@ MonoBehaviour:
   _isBasicSkill: 0
   _causeStatusCondition: 0
   _statusCondition: 5
-  _statusConditionChance: 0
+  _statusConditionChance: 75
+  _applyStatModifier: 0
+  _statDebuff: 0
+  _modifierChance: 0
+  _statModifier:
+    _stat: 0
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []
   _minimumTurnCount: 1
   _maximumTurnCount: 3

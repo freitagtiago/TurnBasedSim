@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Paralyze
   m_EditorClassIdentifier: 
   _name: Paralyze
-  _description: burn
+  _description: "Uma corrente el\xE9trica trespassa o corpo do alvo o deixando paralizado.
+    O alvo pode n\xE3o conseguir atacar."
   _type: 5
   _cost: 15
   _accuracy: 75
@@ -35,5 +36,10 @@ MonoBehaviour:
     _modifierFactor: 0
     _minumumTurns: 2
     _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []
   _minimumTurnCount: 1
   _maximumTurnCount: 5

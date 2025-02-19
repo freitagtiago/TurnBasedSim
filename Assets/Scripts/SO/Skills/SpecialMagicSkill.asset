@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56b5b5fa2fc79424293a5bf83bb85fcb, type: 3}
+  m_Name: SpecialMagicSkill
+  m_EditorClassIdentifier: 
+  _name: Magia Especial
+  _description: "Golpe m\xE1gico extretamente poderoso."
+  _type: 1
+  _cost: 0
+  _accuracy: 100
+  _baseForce: 60
+  _affectAll: 0
+  _isBasicSkill: 0
+  _causeStatusCondition: 0
+  _statusCondition: 4
+  _statusConditionChance: 50
+  _applyStatModifier: 1
+  _statDebuff: 5
+  _modifierChance: 50
+  _statModifier:
+    _stat: 5
+    _value: -15
+    _isPermanent: 0
+    _remainingTurns: 10
+    _stage: 4
+    _modifierFactor: -1
+    _minumumTurns: 3
+    _maximumTurns: 10
+  _isSpecialSkill: 1
+  _restoreHPFactor: 25
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd:
+  - _stat: 2
+    _value: 27
+    _isPermanent: 0
+    _remainingTurns: 3
+    _stage: 4
+    _modifierFactor: 1
+    _minumumTurns: 4
+    _maximumTurns: 4
+  - _stat: 3
+    _value: 30
+    _isPermanent: 0
+    _remainingTurns: 3
+    _stage: 4
+    _modifierFactor: 1
+    _minumumTurns: 4
+    _maximumTurns: 4
+  - _stat: 4
+    _value: 17
+    _isPermanent: 0
+    _remainingTurns: 3
+    _stage: 4
+    _modifierFactor: 1
+    _minumumTurns: 4
+    _maximumTurns: 4
+  - _stat: 5
+    _value: 15
+    _isPermanent: 0
+    _remainingTurns: 3
+    _stage: 4
+    _modifierFactor: 1
+    _minumumTurns: 4
+    _maximumTurns: 4

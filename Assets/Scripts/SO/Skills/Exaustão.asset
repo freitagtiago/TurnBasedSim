@@ -9,31 +9,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6d31ea78c778fd4696cfd62e707b944, type: 3}
-  m_Name: Buff de Ataque
+  m_Script: {fileID: 11500000, guid: 7096666d2f043a54d8499ce0f47d3268, type: 3}
+  m_Name: "Exaust\xE3o"
   m_EditorClassIdentifier: 
-  _name: "Buff de Ataque F\xEDsico"
-  _description: "Uma energia poderosa que faz com que o alvo ganhe mais for\xE7a
-    f\xEDsica por alguns turnos."
-  _type: 0
-  _cost: 10
-  _accuracy: 90
+  _name: "Exaust\xE3o"
+  _description: "O alvo sente que sua energia foge de seu corpo. Se exausto o dano
+    causado pelo alvo ser\xE1 reduzido em 30%."
+  _type: 6
+  _cost: 15
+  _accuracy: 75
   _baseForce: 0
   _affectAll: 0
   _isBasicSkill: 0
-  _causeStatusCondition: 0
-  _statusCondition: 0
-  _statusConditionChance: 0
+  _causeStatusCondition: 1
+  _statusCondition: 4
+  _statusConditionChance: 75
   _applyStatModifier: 0
   _statDebuff: 0
   _modifierChance: 0
   _statModifier:
-    _stat: 2
+    _stat: 0
     _value: 0
     _isPermanent: 0
-    _remainingTurns: 6
-    _stage: 2
-    _modifierFactor: 1
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
     _minumumTurns: 2
     _maximumTurns: 6
   _isSpecialSkill: 0
@@ -41,3 +41,5 @@ MonoBehaviour:
   _removeDebuff: 0
   _cureAllStatusConditions: 0
   _modifiersToAdd: []
+  _minimumTurnCount: 1
+  _maximumTurnCount: 3

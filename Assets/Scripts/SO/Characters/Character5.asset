@@ -20,15 +20,15 @@ MonoBehaviour:
   _equipment: {fileID: 11400000, guid: 953de82dbc7e8cc4b92c7dd254d77c5a, type: 2}
   _stats:
   - _stat: 0
-    _value: 75
+    _value: 475
   - _stat: 1
-    _value: 50
+    _value: 90
   - _stat: 2
-    _value: 40
+    _value: 30
   - _stat: 3
-    _value: 60
+    _value: 70
   - _stat: 4
-    _value: 20
+    _value: 35
   - _stat: 5
     _value: 30
   - _stat: 6
@@ -42,3 +42,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f88888462efb36943893760a725ce74a, type: 2}
   - {fileID: 11400000, guid: 9e7db346a2eb2284f889408d77052edc, type: 2}
   _availableItens: []
+  _specialSkill: {fileID: 0}

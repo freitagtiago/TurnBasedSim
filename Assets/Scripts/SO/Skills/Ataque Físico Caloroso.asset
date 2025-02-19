@@ -9,31 +9,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6d31ea78c778fd4696cfd62e707b944, type: 3}
-  m_Name: Buff de Ataque
+  m_Script: {fileID: 11500000, guid: 6e6e1462bc0083944bb68b22ad2ce5ec, type: 3}
+  m_Name: "Ataque F\xEDsico Caloroso"
   m_EditorClassIdentifier: 
-  _name: "Buff de Ataque F\xEDsico"
-  _description: "Uma energia poderosa que faz com que o alvo ganhe mais for\xE7a
-    f\xEDsica por alguns turnos."
-  _type: 0
+  _name: "Abra\xE7o Caloroso"
+  _description: "Um abra\xE7o quente que possui uma pequena chance de queimar o alvo."
+  _type: 2
   _cost: 10
-  _accuracy: 90
-  _baseForce: 0
+  _accuracy: 85
+  _baseForce: 40
   _affectAll: 0
   _isBasicSkill: 0
-  _causeStatusCondition: 0
-  _statusCondition: 0
-  _statusConditionChance: 0
+  _causeStatusCondition: 1
+  _statusCondition: 6
+  _statusConditionChance: 25
   _applyStatModifier: 0
-  _statDebuff: 0
-  _modifierChance: 0
+  _statDebuff: 3
+  _modifierChance: 10
   _statModifier:
-    _stat: 2
+    _stat: 3
     _value: 0
     _isPermanent: 0
-    _remainingTurns: 6
-    _stage: 2
-    _modifierFactor: 1
+    _remainingTurns: 0
+    _stage: 1
+    _modifierFactor: -1
     _minumumTurns: 2
     _maximumTurns: 6
   _isSpecialSkill: 0

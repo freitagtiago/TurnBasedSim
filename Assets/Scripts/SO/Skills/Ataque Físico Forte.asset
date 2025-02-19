@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: "Ataque F\xEDsico Forte"
   m_EditorClassIdentifier: 
   _name: "Ataque F\xEDsico Forte"
-  _description: fisico
+  _description: "Uma jogada de corpo em dire\xE7\xE3o ao inimigo. Tem uma pequena
+    chance de baixar a defesa f\xEDsica do alvo."
   _type: 6
   _cost: 10
   _accuracy: 100
@@ -24,10 +25,10 @@ MonoBehaviour:
   _statusCondition: 0
   _statusConditionChance: 0
   _applyStatModifier: 1
-  _statDebuff: 0
-  _modifierChance: 0
+  _statDebuff: 3
+  _modifierChance: 10
   _statModifier:
-    _stat: 4
+    _stat: 3
     _value: 0
     _isPermanent: 0
     _remainingTurns: 0
@@ -35,3 +36,8 @@ MonoBehaviour:
     _modifierFactor: -1
     _minumumTurns: 2
     _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []

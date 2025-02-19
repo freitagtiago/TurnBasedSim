@@ -180,6 +180,15 @@ public class Character
             _remainingTurnsStatusCondition = 0;
             RemoveAllDebuffs();
         }
+
+        SkillSO skill = TurnBasedSystem.Instance._selectedSkill;
+
+        if (skill != null
+            &&!skill._isSpecialSkill)
+        {
+            TurnBasedSystem.Instance.AddActionPoints(TurnBasedSystem.Instance.GetCurrentActor()._side, true, false, damage);
+            TurnBasedSystem.Instance.AddActionPoints(_side, false, _inDefensiveState, damage);
+        }
     }
 
     public bool HandleStatusCondition()

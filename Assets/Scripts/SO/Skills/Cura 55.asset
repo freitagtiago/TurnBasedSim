@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Cura 55
   m_EditorClassIdentifier: 
   _name: "Cura M\xE9dia"
-  _description: teste inicial
-  _type: 0
+  _description: "Energia m\xE1gica que recupera 55% da vida do alvo."
+  _type: 3
   _cost: 10
   _accuracy: 100
   _baseForce: 0
@@ -23,8 +23,24 @@ MonoBehaviour:
   _causeStatusCondition: 0
   _statusCondition: 0
   _statusConditionChance: 0
-  _isPercent: 1
+  _applyStatModifier: 0
+  _statDebuff: 0
+  _modifierChance: 0
+  _statModifier:
+    _stat: 0
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []
   _canRevive: 0
-  _cureValue: 55
+  _cureValue: 0.55
   _cureStatusCondition: 0
   _removeDebuffs: 0

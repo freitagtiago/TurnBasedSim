@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Threading;
 using Unity.Mathematics;
 using UnityEditor.Experimental.GraphView;
@@ -14,7 +16,7 @@ public class TurnBasedSystem : MonoBehaviour
 {
     public static TurnBasedSystem Instance;
 
-    [SerializeField] private BattleState _currentState;
+    public GameObject _startButton;
     [SerializeField] private TurnBasedSystemUI _battleUI;
     [SerializeField] private CharacterUI _characterUIPrefab;
 
@@ -49,6 +51,22 @@ public class TurnBasedSystem : MonoBehaviour
 
     [Header("Matchups")]
     public List<TypeMatchup> _typeMatchupList = new List<TypeMatchup>();
+
+    [SerializeField] public int _maxActionPoints { get; private set; } = 200;
+    [Header("Special Action")]
+    [SerializeField] private float _bluffFactor = 0.5f;
+    [SerializeField] private float _fullSpecialBarFactor = 0.5f;
+    [SerializeField] public int _currentActionPointsSideA { get; private set; } = 0;
+    [SerializeField] public int _currentActionPointsSideB { get; private set; } = 0;
+    [SerializeField] private float _actionPointsAttacking = 10;
+    [SerializeField] private float _actionPointsDefending = 3;
+    [SerializeField] private float _actionPointsBeingAttacked = 5;
+
+    public Character _characterCharging;
+    public bool _isCharging { get; private set; } = false;
+    public bool _isBluffing { get; private set; } = false;
+    public int _deceived { get; private set; } = 0;
+
 
     private void Awake()
     {
@@ -87,7 +105,9 @@ public class TurnBasedSystem : MonoBehaviour
         {
             return;
         }
-        _currentState = BattleState.START;
+        _startButton.SetActive(false);
+        _battleUI.UpdateActionPointsUI();
+
         LoadCharacters();
         DefineOrder();
         StartCoroutine(AdvanceTurn());
@@ -134,11 +154,23 @@ public class TurnBasedSystem : MonoBehaviour
         }
     }
 
-    public void EndBattle()
+    public IEnumerator EndBattle()
     {
+        string message = "";
+        if(GetCurrentActor()._side == 0)
+        {
+            message = "A batalha foi encerrada, a equipe A foi vitoriosa.";
+        }
+        else
+        {
+            message = "A batalha foi encerrada, a equipe B foi vitoriosa.";
+        }
+        _battleUI.SetupDialoguePanel(message, null);
+        yield return new WaitForSecondsRealtime(3f);
         _onBattle = false;
         _charactersSideA = new Character[4];
         _charactersSideB = new Character[4];
+        _startButton.SetActive(true);
         _battleUI.EndBattle();
     }
 
@@ -146,7 +178,7 @@ public class TurnBasedSystem : MonoBehaviour
     {
         if (CheckCondition())
         {
-            EndBattle();
+            StartCoroutine(EndBattle());
         }
         else
         {
@@ -162,38 +194,67 @@ public class TurnBasedSystem : MonoBehaviour
                     _currentTurn = 0;
                 }
 
-                if (_actionOrder[_currentTurn]._currentHP > 0)
+                if (_isCharging
+                    && _characterCharging == _actionOrder[_currentTurn]
+                    && _characterCharging._currentHP > 0)
                 {
-                    _actionOrder[_currentTurn].HandleStatModifier();
-                    if (!_actionOrder[_currentTurn].HandleStatusCondition())
+                    if (!HandleSpecialAction())
                     {
-                        currentActorDefined = true;
-
-                        if(_actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Poisoned
-                            || _actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Burned)
-                        {
-                            string message = $"{_actionOrder[_currentTurn]._name} está sofrendo os efeitos de {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
-
-                            _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
-                            yield return new WaitForSeconds(3f);
-                        }
-
-                        UpdateCharacterSlotUI();
+                        string message = "Nenhum inimigo caiu no blefe, o golpe foi cancelado.";
+                        _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
                     }
-                    else
+                    currentActorDefined = true;
+                    yield return new WaitForSeconds(3f);
+                }
+                else if(_isCharging
+                    && _characterCharging._side == _actionOrder[_currentTurn]._side
+                    && _characterCharging != _actionOrder[_currentTurn])
+                {
+                    continue;
+                }
+                else
+                {
+                    if(_isCharging
+                        && _characterCharging._currentHP <= 0)
                     {
-                        string message = "";
+                        _isCharging = false;
+                        _characterCharging = null;
+                    }
 
-                        if(_actionOrder[_currentTurn]._currentStatusCondition != StatusCondition.Freezed)
+                    if (_actionOrder[_currentTurn]._currentHP > 0)
+                    {
+                        _actionOrder[_currentTurn].HandleStatModifier();
+                        if (!_actionOrder[_currentTurn].HandleStatusCondition())
                         {
-                            message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+                            currentActorDefined = true;
+
+                            if (_actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Poisoned
+                                || _actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Burned)
+                            {
+                                string message = $"{_actionOrder[_currentTurn]._name} está sofrendo os efeitos de {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+
+                                _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
+                                yield return new WaitForSeconds(3f);
+                            }
+
+                            UpdateCharacterSlotUI();
                         }
                         else
                         {
-                            message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, pode se recuperar a qualquer momento.";
-                        } 
-                        _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
-                        yield return new WaitForSeconds(3f);
+                            string message = "";
+                            _actionOrder[_currentTurn]._inDefensiveState = false;
+
+                            if (_actionOrder[_currentTurn]._currentStatusCondition != StatusCondition.Freezed)
+                            {
+                                message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+                            }
+                            else
+                            {
+                                message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, pode se recuperar a qualquer momento.";
+                            }
+                            _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
+                            yield return new WaitForSeconds(3f);
+                        }
                     }
                 }
             }
@@ -323,15 +384,25 @@ public class TurnBasedSystem : MonoBehaviour
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
 
-    public void ApplySkillOnAllTargets()
+    public void ApplySkillOnAllTargets(string specialMessage = "")
     {
         _battleUI.CloseTargetPanel();
-        string message = $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em todos";
+
+        string message = specialMessage == "" ? $"{GetCurrentActor()._name} usou a habilidade {_selectedSkill._name} em todos" : specialMessage;
 
         CalculateAndApplyDamage(null);
         UpdateTargetCharacterSlotUI(0, null);
+        if (_selectedSkill._isSpecialSkill)
+        {
+            _battleUI.SetupDialoguePanel(message, () => {
+                                                            _currentTurn--;
+                                                            StartCoroutine(AdvanceTurn()); });
+        }
+        else
+        {
+            _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
+        }
         _selectedSkill = null;
-        _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
 
     public void ApplyItemOnAllTargets()
@@ -355,8 +426,7 @@ public class TurnBasedSystem : MonoBehaviour
                 UpdateTargetCharacterSlotUI(character._side, character);
             }
         }
-
-        _selectedItem = null;
+        ReduceItem();
 
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
@@ -370,7 +440,7 @@ public class TurnBasedSystem : MonoBehaviour
 
         target.ApplyItem(_selectedItem);
         UpdateTargetCharacterSlotUI(target._side, target);
-        _selectedItem = null;
+        ReduceItem();
 
         _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
     }
@@ -464,85 +534,71 @@ public class TurnBasedSystem : MonoBehaviour
 
         Character currentActor = GetCurrentActor();
 
-        if (currentActor._currentStatusCondition == StatusCondition.Blind)
+        if (!_selectedSkill._isSpecialSkill)
         {
-            if (Random.Range(0, 101) > 50)
+            if (currentActor._currentStatusCondition == StatusCondition.Blind)
             {
-                return SetMessage(0
-                                , false
-                                , true
-                                , condition
-                                , target
-                                , false
-                                , false
-                                , matchupValue);
+                if (Random.Range(0, 101) > 50)
+                {
+                    return SetMessage(0
+                                    , false
+                                    , true
+                                    , condition
+                                    , target
+                                    , false
+                                    , false
+                                    , matchupValue);
+                }
             }
-        }else if(currentActor._currentStatusCondition == StatusCondition.Confused)
-        {
-            if (Random.Range(0, 101) > 50)
+            else if (currentActor._currentStatusCondition == StatusCondition.Confused)
             {
-                currentActor.ApplyDamage(currentActor._equipment._basicSkill._baseForce);
-                if (currentActor._side == 0)
+                if (Random.Range(0, 101) > 50)
                 {
-                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, currentActor), 0);
+                    currentActor.ApplyDamage(currentActor._equipment._basicSkill._baseForce * -1);
+                    if (currentActor._side == 0)
+                    {
+                        _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, currentActor), 0);
+                    }
+                    else
+                    {
+                        _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, currentActor), 1);
+                    }
+                    return SetMessage(currentActor._equipment._basicSkill._baseForce
+                                       , false
+                                       , false
+                                       , condition
+                                       , target
+                                       , false
+                                       , true
+                                       , matchupValue);
                 }
-                else
-                {
-                    _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, currentActor), 1);
-                }
-                return SetMessage(currentActor._equipment._basicSkill._baseForce
-                                   , false
-                                   , false
-                                   , condition
-                                   , target
-                                   , false
-                                   , true
-                                   , matchupValue);
             }
         }
+        
 
         if (_selectedSkill is HealingSkillSO)
         {
             if (!_selectedSkill._affectAll)
             {
-                bool canRevive = (_selectedSkill as HealingSkillSO)._canRevive;
-                if (currentActor._side == 0){
-                    foreach (Character character in _charactersSideA)
-                    {
-                        if (!canRevive)
-                        {
-                            if(character._currentHP > 0)
-                            {
-                                character.ApplyDamage((_selectedSkill as HealingSkillSO)._cureValue);
-                                _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
-                            }
-                        }
-                        else
-                        {
-                            character.ApplyDamage((_selectedSkill as HealingSkillSO)._cureValue);
-                            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideA, character), 0);
-                        }
-                    }
-                }
-                else
+                HealingSkillSO healingSkill = _selectedSkill as HealingSkillSO;
+
+                int cureValue = (int)(target._maxHP * healingSkill._cureValue);
+
+                target.ApplyDamage(cureValue);
+
+                if (healingSkill._removeDebuffs
+                            || target._currentHP > 0)
                 {
-                    foreach (Character character in _charactersSideB)
-                    {
-                        if (!canRevive)
-                        {
-                            if (character._currentHP > 0)
-                            {
-                                character.ApplyDamage((_selectedSkill as HealingSkillSO)._cureValue);
-                                _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
-                            }
-                        }
-                        else
-                        {
-                            character.ApplyDamage((_selectedSkill as HealingSkillSO)._cureValue);
-                            _battleUI.UpdateCharacterSlotUI(Array.IndexOf(_charactersSideB, character), 1);
-                        }
-                    }
+                    target.RemoveAllDebuffs();
                 }
+
+                if (healingSkill._cureStatusCondition
+                    || target._currentHP > 0)
+                {
+                    target.ApplyStatusCondition(StatusCondition.None);
+                }
+
+                _battleUI.UpdateCharacterSlotUI(Array.IndexOf(target._side == 0 ? _charactersSideA : _charactersSideB, target), 0);
             }
             else
             {
@@ -552,10 +608,11 @@ public class TurnBasedSystem : MonoBehaviour
                 {
                     foreach (Character character in _charactersSideA)
                     {
+                        int cureValue = (int)(character._maxHP * healingSkill._cureValue);
                         if (healingSkill._canRevive
                             || character._currentHP > 0)
                         {
-                            character.ApplyDamage(healingSkill._cureValue);
+                            character.ApplyDamage(cureValue);
                         }
 
                         if (healingSkill._removeDebuffs
@@ -577,10 +634,11 @@ public class TurnBasedSystem : MonoBehaviour
                 {
                     foreach (Character character in _charactersSideB)
                     {
+                        int cureValue = (int)(character._maxHP * healingSkill._cureValue);
                         if (healingSkill._canRevive
                             || character._currentHP > 0)
                         {
-                            character.ApplyDamage(healingSkill._cureValue);
+                            character.ApplyDamage(cureValue);
                         }
 
                         if (healingSkill._removeDebuffs
@@ -602,16 +660,19 @@ public class TurnBasedSystem : MonoBehaviour
         }
         else
         {
-            if (CheckIfAttackMissed())
+            if (!_selectedSkill._isSpecialSkill)
             {
-                return SetMessage(0
-                                   , false
-                                   , true
-                                   , condition
-                                   , target
-                                   , false
-                                   , false
-                                   , matchupValue);
+                if (CheckIfAttackMissed())
+                {
+                    return SetMessage(0
+                                       , false
+                                       , true
+                                       , condition
+                                       , target
+                                       , false
+                                       , false
+                                       , matchupValue);
+                }
             }
 
             if (_selectedSkill is StatSkillSO)
@@ -753,12 +814,12 @@ public class TurnBasedSystem : MonoBehaviour
                                 character.ApplyStatModifier(_selectedSkill._statModifier);
                             }
 
-                            GetTypeMatchupBonus(currentActor._type, character._type, out matchupValue);
+                            GetTypeMatchupBonus(_selectedSkill._type, character._type, out matchupValue);
                             finalDamage = GetDamage(attackerStat
                                                     , defenderStat
                                                     , _selectedSkill._baseForce
                                                     , isCritical
-                                                    , target._inDefensiveState
+                                                    , character._inDefensiveState
                                                     , weaponBonus
                                                     , CheckIfIsStab(currentActor._type, _selectedSkill._type)
                                                     , matchupValue);
@@ -801,21 +862,21 @@ public class TurnBasedSystem : MonoBehaviour
                                 && Random.Range(0, 101) < _selectedSkill._statusConditionChance)
                             {
                                 condition = _selectedSkill._statusCondition;
-                                target.ApplyStatusCondition(condition);
+                                character.ApplyStatusCondition(condition);
                             }
                             if (_selectedSkill._applyStatModifier
                                  && Random.Range(0, 101) < _selectedSkill._modifierChance)
                             {
-                                target.ApplyStatModifier(_selectedSkill._statModifier);
+                                character.ApplyStatModifier(_selectedSkill._statModifier);
                             }
 
-                            GetTypeMatchupBonus(currentActor._type, target._type, out matchupValue);
+                            GetTypeMatchupBonus(_selectedSkill._type, character._type, out matchupValue);
 
                             finalDamage = GetDamage(attackerStat
                                                     , defenderStat
                                                     , _selectedSkill._baseForce
                                                     , isCritical
-                                                    , target._inDefensiveState
+                                                    , character._inDefensiveState
                                                     , weaponBonus
                                                     , CheckIfIsStab(currentActor._type, _selectedSkill._type)
                                                     , matchupValue);
@@ -859,7 +920,7 @@ public class TurnBasedSystem : MonoBehaviour
                         target.ApplyStatModifier(_selectedSkill._statModifier);
                     }
 
-                    GetTypeMatchupBonus(currentActor._type, target._type, out matchupValue);
+                    GetTypeMatchupBonus(_selectedSkill._type, target._type, out matchupValue);
                     finalDamage = GetDamage(attackerStat
                                             , defenderStat
                                             , _selectedSkill._baseForce
@@ -1076,10 +1137,58 @@ public class TurnBasedSystem : MonoBehaviour
             finalDamage -= (int)Math.Round(finalDamage * _exaustedPenalization);
         }
 
+        if (_selectedSkill._isSpecialSkill)
+        {
+            if (_isBluffing)
+            {
+                finalDamage += (int)((_deceived * _bluffFactor) * finalDamage);
+            }
+            if (GetCurrentActor()._side == 0) 
+            {
+                if(_currentActionPointsSideA == 200)
+                {
+                    finalDamage += (int)(finalDamage * _fullSpecialBarFactor);
+                }
+            }
+            else
+            {
+                if (_currentActionPointsSideA == 200)
+                {
+                    finalDamage += (int)(finalDamage * _fullSpecialBarFactor);
+                }
+            }
+        }
+
         if (inDefensiveState)
         {
-            finalDamage = (int)(finalDamage / _defensePenalization);
+            if (_selectedSkill._isSpecialSkill)
+            {
+                if (!TurnBasedSystem.Instance._isBluffing)
+                {
+                    finalDamage = (int)(finalDamage / (_defensePenalization * 2));
+                }
+                else
+                {
+                    finalDamage = (int)(finalDamage * 1.5f);
+                }
+            }
+            else
+            {
+                finalDamage = (int)(finalDamage / _defensePenalization);
+            }
+
         }
+        else
+        {
+            if (_selectedSkill._isSpecialSkill)
+            {
+                if (TurnBasedSystem.Instance._isBluffing)
+                {
+                    finalDamage = (int)(finalDamage / (_defensePenalization * 2));
+                }
+            }
+        }
+
         return finalDamage;
     }
 
@@ -1093,25 +1202,220 @@ public class TurnBasedSystem : MonoBehaviour
         return false;
     }
 
-    private void GetTypeMatchupBonus(ElementType attackerType, ElementType defenderType, out float matchupValue)
+    private void GetTypeMatchupBonus(ElementType skillType, ElementType defenderType, out float matchupValue)
     {
         matchupValue = 1f;
 
-        TypeMatchup typeMatchupAttacker = _typeMatchupList.Find(tm => tm._elementalType == attackerType);
-
-        ElementType isWeak = typeMatchupAttacker._strongAgainst.Find(tm => tm == defenderType);
-        if (isWeak != ElementType.Neutral)
+        if(skillType == ElementType.Neutral)
         {
-            matchupValue = 1.5f;
             return;
         }
 
-        TypeMatchup typeMatchupDefender = _typeMatchupList.Find(tm => tm._elementalType == attackerType);
+        TypeMatchup typeMatchupAttacker = _typeMatchupList.Find(tm => tm._elementalType == skillType);
 
-        ElementType isResistent = typeMatchupDefender._resistences.Find(tm => tm == attackerType);
-        if (isWeak != ElementType.Neutral)
+        if(typeMatchupAttacker._strongAgainst != null)
         {
-            matchupValue= 0.75f;
+            ElementType isWeak = typeMatchupAttacker._strongAgainst.Find(tm => tm == defenderType);
+            if (isWeak != ElementType.Neutral)
+            {
+                matchupValue = 1.5f;
+                return;
+            }
+        }
+        else
+        {
+            Debug.LogError($"Forças do tipo {typeMatchupAttacker._elementalType} estão nulas");
+        }
+
+        TypeMatchup typeMatchupDefender = _typeMatchupList.Find(tm => tm._elementalType == skillType);
+
+        if(typeMatchupDefender._resistences != null)
+        {
+            ElementType isResistent = typeMatchupDefender._resistences.Find(tm => tm == skillType);
+            if (isResistent != ElementType.Neutral)
+            {
+                matchupValue = 0.75f;
+            }
+        }
+        else
+        {
+            Debug.LogError($"Resistências do tipo {typeMatchupAttacker._elementalType} estão nulas");
+        }
+    }
+
+    private void ReduceItem()
+    {
+        GetCurrentActor()._itemsList.Remove(_selectedItem);
+        _selectedItem = null;
+    }
+
+    public void AddActionPoints(int sideToAddPoints, bool isAttacking, bool isDefending, int damage)
+    {
+        if(damage > 0)
+        {
+            return;
+        }
+
+        damage = Mathf.Abs(damage);
+        int pointsToEarn = 0;
+        
+        if(isAttacking)
+        {
+            pointsToEarn = (int)(Mathf.Round(damage * (_actionPointsAttacking / 100)));
+        }else if (isDefending)
+        {
+            pointsToEarn = (int)(Mathf.Round(damage * (_actionPointsDefending / 100)));
+        }
+        else
+        {
+            pointsToEarn = (int)(Mathf.Round(damage * (_actionPointsBeingAttacked / 100)));
+        }
+
+        if (sideToAddPoints == 0)
+        {
+            _currentActionPointsSideA = Mathf.Clamp(_currentActionPointsSideA + pointsToEarn, 0, _maxActionPoints);
+        }
+        else
+        {
+            _currentActionPointsSideB = Mathf.Clamp(_currentActionPointsSideB + pointsToEarn, 0, _maxActionPoints);
+        }
+        _battleUI.UpdateActionPointsUI();
+    }
+
+    public void SetSpecialAction(bool isBluffing)
+    {
+        _characterCharging = GetCurrentActor();
+        _isCharging = true;
+        _isBluffing = isBluffing;
+
+        string message = $"A equipe de {GetCurrentActor()._name} está preparando um ataque. Todos os turnos serão usados para a preparação.";
+        _battleUI.SetupDialoguePanel(message, () => { StartCoroutine(AdvanceTurn()); });
+    }
+
+    private bool HandleSpecialAction()
+    {
+        _isCharging = false;
+        _characterCharging = null;
+        string message = "";
+
+        SkillSO specialSkill = GetCurrentActor()._baseCharacter._specialSkill;
+        _selectedSkill = specialSkill;
+        if (_isBluffing)
+        {
+            _deceived = 0;
+            List<Character> enemyList = GetSideList(GetCurrentActor()._side, true);
+
+            foreach(Character character in enemyList)
+            {
+                if (character._currentHP > 0
+                    && character._inDefensiveState)
+                {
+                    _deceived++;
+                }
+            }
+
+            if(_deceived == 0)
+            {
+                if(GetCurrentActor()._side == 0)
+                {
+                    _currentActionPointsSideA = 0;
+                }
+                else
+                {
+                    _currentActionPointsSideB = 0;
+                }
+                _battleUI.UpdateActionPointsUI();
+                return false;
+            }
+
+            List<StatModifier> modifierList = specialSkill._modifiersToAdd;
+
+            foreach (Character character in  GetSideList(GetCurrentActor()._side, false))
+            {
+                if(character._currentHP > 0)
+                {
+                    if(specialSkill._restoreHPFactor > 0)
+                    {
+                        character.ApplyDamage((int)(character._maxHP * specialSkill._restoreHPFactor));
+                    }
+                    if (specialSkill._removeDebuff)
+                    {
+                        character.RemoveAllDebuffs();
+                    }
+                    if (specialSkill._cureAllStatusConditions)
+                    {
+                        character.ApplyStatusCondition(StatusCondition.None);
+                    }
+                    foreach(StatModifier modifier in modifierList)
+                    {
+                        modifier._stage = _deceived;
+                        modifier._minumumTurns = _deceived;
+                        modifier._maximumTurns = _deceived;
+
+                        character.ApplyStatModifier(modifier);
+                    }
+                    UpdateTargetCharacterSlotUI(character._side, character);
+                }
+            }
+
+            if (GetCurrentActor()._side == 0)
+            {
+                _currentActionPointsSideA = _deceived * 10;
+            }
+            else
+            {
+                _currentActionPointsSideB = _deceived * 10;
+            }
+
+            _selectedSkill = specialSkill;
+            message = $"A equipe de  {GetCurrentActor()._name} blefou e {_deceived} adversários baixaram a guarda. " + Environment.NewLine;
+            message += _deceived > 0 ? $"{_deceived} foram enganados e baixaram sua guarda, assim foram alvo de um golpe devastador. " + Environment.NewLine : "";
+            message += _deceived > 0 ? $"A equipe de {GetCurrentActor()._name} recebeu os benefícios do blefe." + Environment.NewLine : "";
+            ApplySkillOnAllTargets(message);
+        }
+        else
+        {
+            _selectedSkill = specialSkill;
+            message = $"A equipe de  {GetCurrentActor()._name} não blefou e usou o ataque especial. " + Environment.NewLine;
+            message += "Personagens que não se defenderam sofreram um dano maior. " + Environment.NewLine;
+            ApplySkillOnAllTargets(message);
+            if (GetCurrentActor()._side == 0)
+            {
+                _currentActionPointsSideA = 0;
+            }
+            else
+            {
+                _currentActionPointsSideB = 0;
+            }
+        }
+        _battleUI.UpdateActionPointsUI();
+        _deceived = 0;
+        return true;
+    }
+
+    private List<Character> GetSideList(int side, bool returnEnemyList)
+    {
+        if (side == 0)
+        {
+            if (returnEnemyList)
+            {
+                return _charactersSideB.ToList();
+            }
+            else
+            {
+                return _charactersSideA.ToList();
+            }
+        }
+        else
+        {
+            if (returnEnemyList)
+            {
+                return _charactersSideA.ToList();
+            }
+            else
+            {
+                return _charactersSideB.ToList();
+            } 
         }
     }
 }
