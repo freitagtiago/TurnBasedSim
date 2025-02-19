@@ -105,13 +105,13 @@ public class TurnBasedSystem : MonoBehaviour
         {
             return;
         }
+        _onBattle = true;
         _startButton.SetActive(false);
         _battleUI.UpdateActionPointsUI();
 
         LoadCharacters();
         DefineOrder();
         StartCoroutine(AdvanceTurn());
-        _onBattle = true;       
     }
 
     public bool CheckCondition()
@@ -176,98 +176,101 @@ public class TurnBasedSystem : MonoBehaviour
 
     public IEnumerator AdvanceTurn()
     {
-        if (CheckCondition())
+        if (_onBattle)
         {
-            StartCoroutine(EndBattle());
-        }
-        else
-        {
-            bool currentActorDefined = false;
-            int iterations = 0; 
-            while (!currentActorDefined
-                || iterations > 15)
+            if (CheckCondition())
             {
-                iterations++;
-                _currentTurn++;
-                if (_currentTurn >= _actionOrder.Count)
+                StartCoroutine(EndBattle());
+            }
+            else
+            {
+                bool currentActorDefined = false;
+                int iterations = 0;
+                while (!currentActorDefined
+                    || iterations > 15)
                 {
-                    _currentTurn = 0;
-                }
-
-                if (_isCharging
-                    && _characterCharging == _actionOrder[_currentTurn])
-                {
-                    if (!HandleSpecialAction())
+                    iterations++;
+                    _currentTurn++;
+                    if (_currentTurn >= _actionOrder.Count)
                     {
-                        string message = "Nenhum inimigo caiu no blefe, o golpe foi cancelado.";
-                        _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
-                    }
-                    currentActorDefined = true;
-                    yield return new WaitForSeconds(3f);
-                    if (CheckCondition())
-                    {
-                        StartCoroutine(EndBattle());
-                        break;
-                    }
-                }
-                else if(_isCharging
-                    && _characterCharging._side == _actionOrder[_currentTurn]._side
-                    && _characterCharging != _actionOrder[_currentTurn])
-                {
-                    continue;
-                }
-                else
-                {
-                    if(_isCharging
-                        && _characterCharging._currentHP <= 0)
-                    {
-                        _isCharging = false;
-                        _characterCharging = null;
+                        _currentTurn = 0;
                     }
 
-                    if (_actionOrder[_currentTurn]._currentHP > 0)
+                    if (_isCharging
+                        && _characterCharging == _actionOrder[_currentTurn])
                     {
-                        _actionOrder[_currentTurn].HandleStatModifier();
-                        if (!_actionOrder[_currentTurn].HandleStatusCondition())
+                        if (!HandleSpecialAction())
                         {
-                            currentActorDefined = true;
-
-                            if (_actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Poisoned
-                                || _actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Burned)
-                            {
-                                string message = $"{_actionOrder[_currentTurn]._name} está sofrendo os efeitos de {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
-
-                                _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
-                                yield return new WaitForSeconds(3f);
-                            }
-
-                            UpdateCharacterSlotUI();
+                            string message = "Nenhum inimigo caiu no blefe, o golpe foi cancelado.";
+                            _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
                         }
-                        else
+                        currentActorDefined = true;
+                        yield return new WaitForSeconds(3f);
+                        if (CheckCondition())
                         {
-                            string message = "";
-                            _actionOrder[_currentTurn]._inDefensiveState = false;
+                            StartCoroutine(EndBattle());
+                            break;
+                        }
+                    }
+                    else if (_isCharging
+                        && _characterCharging._side == _actionOrder[_currentTurn]._side
+                        && _characterCharging != _actionOrder[_currentTurn])
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        if (_isCharging
+                            && _characterCharging._currentHP <= 0)
+                        {
+                            _isCharging = false;
+                            _characterCharging = null;
+                        }
 
-                            if (_actionOrder[_currentTurn]._currentStatusCondition != StatusCondition.Freezed)
+                        if (_actionOrder[_currentTurn]._currentHP > 0)
+                        {
+                            _actionOrder[_currentTurn].HandleStatModifier();
+                            if (!_actionOrder[_currentTurn].HandleStatusCondition())
                             {
-                                message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+                                currentActorDefined = true;
+
+                                if (_actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Poisoned
+                                    || _actionOrder[_currentTurn]._currentStatusCondition == StatusCondition.Burned)
+                                {
+                                    string message = $"{_actionOrder[_currentTurn]._name} está sofrendo os efeitos de {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+
+                                    _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
+                                    yield return new WaitForSeconds(3f);
+                                }
+
+                                UpdateCharacterSlotUI();
                             }
                             else
                             {
-                                message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, pode se recuperar a qualquer momento.";
+                                string message = "";
+                                _actionOrder[_currentTurn]._inDefensiveState = false;
+
+                                if (_actionOrder[_currentTurn]._currentStatusCondition != StatusCondition.Freezed)
+                                {
+                                    message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, irá se recuperar em {_actionOrder[_currentTurn]._remainingTurnsStatusCondition} turno(s).";
+                                }
+                                else
+                                {
+                                    message = $"{_actionOrder[_currentTurn]._name} está {_actionOrder[_currentTurn]._currentStatusCondition.ToString()}, pode se recuperar a qualquer momento.";
+                                }
+                                _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
+                                yield return new WaitForSeconds(3f);
                             }
-                            _battleUI.SetupDialoguePanel(message, () => { _battleUI.CloseDialoguePanel(); });
-                            yield return new WaitForSeconds(3f);
                         }
                     }
                 }
-            }
 
-            if(iterations > 15)
-            {
-                Debug.LogError("INFINITE LOOP");
+                if (iterations > 15)
+                {
+                    Debug.LogError("INFINITE LOOP");
+                }
+                SetTurnAction();
             }
-            SetTurnAction();
         }
     }
 
