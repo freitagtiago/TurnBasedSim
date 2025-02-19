@@ -16,6 +16,7 @@ public class CharacterUI : MonoBehaviour
     [SerializeField] private Slider _hpSlider;
     [SerializeField] private Slider _spSlider;
     [SerializeField] private Image _sprite;
+    [SerializeField] private GameObject _shield;
     private Character _character;
 
     public void Setup(Character character)
@@ -66,34 +67,36 @@ public class CharacterUI : MonoBehaviour
             _spSlider.fillRect.gameObject.SetActive(true);
         }
 
+        _shield.SetActive((_character._inDefensiveState 
+                            && _character._currentHP > 0));
 
-        switch (_character._currentStatusCondition)
-        {
-            case StatusCondition.Poisoned:
-                _characterName.color = Color.magenta;
-                break;
-            case StatusCondition.Paralyzed:
-                _characterName.color = Color.yellow;
-                break;
-            case StatusCondition.Blind:
-                _characterName.color = Color.gray;
-                break;
-            case StatusCondition.Exausted:
-                _characterName.color = Color.black;
-                break;
-            case StatusCondition.Confused:
-                _characterName.color = Color.green;
-                break;
-            case StatusCondition.Burned:
-                _characterName.color = Color.red;
-                break;
-            case StatusCondition.Freezed:
-                _characterName.color = Color.cyan;
-                break;
-            default:
-                _characterName.color = Color.white;
-                break;
-        }
+       switch (_character._currentStatusCondition)
+       {
+           case StatusCondition.Poisoned:
+               _characterName.color = Color.magenta;
+               break;
+           case StatusCondition.Paralyzed:
+               _characterName.color = Color.yellow;
+               break;
+           case StatusCondition.Blind:
+               _characterName.color = Color.gray;
+               break;
+           case StatusCondition.Exausted:
+               _characterName.color = Color.black;
+               break;
+           case StatusCondition.Confused:
+               _characterName.color = Color.green;
+               break;
+           case StatusCondition.Burned:
+               _characterName.color = Color.red;
+               break;
+           case StatusCondition.Freezed:
+               _characterName.color = Color.cyan;
+               break;
+           default:
+               _characterName.color = Color.white;
+               break;
+       }
     }
 
     private string GetModifierText()

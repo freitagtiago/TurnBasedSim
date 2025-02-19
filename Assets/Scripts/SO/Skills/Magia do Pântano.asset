@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56b5b5fa2fc79424293a5bf83bb85fcb, type: 3}
+  m_Name: "Magia do P\xE2ntano"
+  m_EditorClassIdentifier: 
+  _name: "Magia do P\xE2ntano"
+  _description: "\xC9 conjurada a energia dos p\xE2ntamos em forma de flechas de
+    madeira e lama. O alvo pode ficar envenenado."
+  _type: 3
+  _cost: 10
+  _accuracy: 90
+  _baseForce: 35
+  _affectAll: 0
+  _isBasicSkill: 0
+  _causeStatusCondition: 1
+  _statusCondition: 1
+  _statusConditionChance: 50
+  _applyStatModifier: 1
+  _statDebuff: 5
+  _modifierChance: 10
+  _statModifier:
+    _stat: 5
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 1
+    _modifierFactor: -1
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []

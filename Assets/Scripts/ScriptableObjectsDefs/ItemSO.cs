@@ -5,6 +5,7 @@ using UnityEngine;
 public class ItemSO : ScriptableObject
 {
     public string _name;
+    [TextArea]
     public string _description;
 
     public bool _affetEntireParty = false;

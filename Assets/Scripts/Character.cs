@@ -57,7 +57,7 @@ public class Character
    public void ApplyStatusCondition(StatusCondition condition)
     {
         if(_currentStatusCondition != StatusCondition.None
-            || _currentStatusCondition == condition)
+            && _currentStatusCondition == condition)
         {
             return;
         }

@@ -195,8 +195,7 @@ public class TurnBasedSystem : MonoBehaviour
                 }
 
                 if (_isCharging
-                    && _characterCharging == _actionOrder[_currentTurn]
-                    && _characterCharging._currentHP > 0)
+                    && _characterCharging == _actionOrder[_currentTurn])
                 {
                     if (!HandleSpecialAction())
                     {
@@ -205,6 +204,11 @@ public class TurnBasedSystem : MonoBehaviour
                     }
                     currentActorDefined = true;
                     yield return new WaitForSeconds(3f);
+                    if (CheckCondition())
+                    {
+                        StartCoroutine(EndBattle());
+                        break;
+                    }
                 }
                 else if(_isCharging
                     && _characterCharging._side == _actionOrder[_currentTurn]._side
@@ -449,79 +453,173 @@ public class TurnBasedSystem : MonoBehaviour
     {
         Character character = GetCurrentActor();
         Character target = null;
+        if (_isCharging
+            && _characterCharging._side != character._side)
+        {
+            if (Random.Range(0, 101) > 50)
+            {
+                SetBasicAction(false);
+                _battleUI.SetupEnemyAction(GetCurrentActor());
+                return;
+            }
+        }
+        else if (_currentActionPointsSideB >= 100
+            && Array.IndexOf(_charactersSideB,character) == 0)
+        {
+            int specialActionChance = _currentActionPointsSideB == 200 ? 90 : 60;
+
+            if (Random.Range(0,101) < specialActionChance)
+            {//Use Special
+                bool isBluffing = Random.Range(0, 101) <= 50;
+
+                SetSpecialAction(isBluffing);
+                return;
+            }
+        }
+
+        bool useItem = false;
+        foreach(Character partyMember in _charactersSideB)
+        {
+            if (useItem)
+            {
+                break;
+            }
+            if(partyMember._currentStatusCondition != StatusCondition.None)
+            {
+                foreach(ItemSO item in character._itemsList)
+                {
+                    if(item._cureStatusCondition
+                        && item._statusConditionToCure == partyMember._currentStatusCondition)
+                    {
+                        if(Random.Range(0,100) < 51)
+                        {
+                            target = item._affetEntireParty ? null : partyMember;
+                            _selectedItem = item;
+                            useItem = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (useItem)
+        {
+            if(target == null)
+            {
+                ApplyItemOnAllTargets();
+            }
+            else
+            {
+                ApplyItemOnTarget(target);
+            }
+            return;
+        }
 
         // 0 - 30  Basic Attack
         // 31 - 75 Skill
         // 76 - 100 Defend
 
         int actionChance = Random.Range(0, 101);
-        if(actionChance < 31)
+        if (actionChance < 31)
         {
-            _selectedSkill = character._equipment._basicSkill;
-            bool foundTarget = false;
-            while (!foundTarget)
-            {
-                int index = Random.Range(0, 3);
-                if (_charactersSideA[index]._currentHP > 0)
-                {
-                    target = _charactersSideA[index];
-                    foundTarget = true;
-                }
-            }
-            ApplySkillOnTarget(target);
+            target = EnemyBasicAttack(character, target);
         }
         else if (actionChance < 76)
         {
-            _selectedSkill = character._skillList[UnityEngine.Random.Range(0, character._skillList.Count - 1)];
+            target = EnemySkillAttack(character, target);
+        }
+        else
+        {
+            EnemyDefendAction();
+        }
+        _battleUI.SetupEnemyAction(GetCurrentActor());  
+    }
 
-            bool foundTarget = false;
+    private void EnemyDefendAction()
+    {
+        SetBasicAction(false);
+    }
 
-            if(_selectedSkill is HealingSkillSO)
+    private Character EnemySkillAttack(Character character, Character target)
+    {
+        _selectedSkill = character._skillList[UnityEngine.Random.Range(0, character._skillList.Count - 1)];
+
+        if(_selectedSkill._cost > character._currentSP)
+        {
+            if(Random.Range(0,101) > 50)
             {
-                if (_selectedSkill._affectAll)
-                {
-                    ApplySkillOnAllTargets();
-                }
-                else
-                {
-                    while (!foundTarget)
-                    {
-                        int index = Random.Range(0, 3);
-                        if (_charactersSideB[index]._currentHP > 0)
-                        {
-                            target = _charactersSideB[index];
-                            foundTarget = true;
-                        }
-                    }
-                    ApplySkillOnTarget(target);
-                } 
+                EnemyBasicAttack(character, target);
+                return target;
             }
             else
             {
-                if (_selectedSkill._affectAll)
+                EnemyDefendAction();
+                return null;
+            }
+        }
+
+        bool foundTarget = false;
+
+        if (_selectedSkill is HealingSkillSO)
+        {
+            if (_selectedSkill._affectAll)
+            {
+                ApplySkillOnAllTargets();
+            }
+            else
+            {
+                while (!foundTarget)
                 {
-                    ApplySkillOnAllTargets();
-                }
-                else
-                {
-                    while (!foundTarget)
+                    int index = Random.Range(0, 3);
+                    if (_charactersSideB[index]._currentHP > 0)
                     {
-                        int index = Random.Range(0, 3);
-                        if (_charactersSideA[index]._currentHP > 0)
-                        {
-                            target = _charactersSideA[index];
-                            foundTarget = true;
-                        }
+                        target = _charactersSideB[index];
+                        foundTarget = true;
                     }
-                    ApplySkillOnTarget(target);
                 }
+                ApplySkillOnTarget(target);
             }
         }
         else
         {
-            SetBasicAction(false);
+            if (_selectedSkill._affectAll)
+            {
+                ApplySkillOnAllTargets();
+            }
+            else
+            {
+                while (!foundTarget)
+                {
+                    int index = Random.Range(0, 3);
+                    if (_charactersSideA[index]._currentHP > 0)
+                    {
+                        target = _charactersSideA[index];
+                        foundTarget = true;
+                    }
+                }
+                ApplySkillOnTarget(target);
+            }
         }
-         _battleUI.SetupEnemyAction(GetCurrentActor());
+
+        return target;
+    }
+
+    private Character EnemyBasicAttack(Character character, Character target)
+    {
+        _selectedSkill = character._equipment._basicSkill;
+        bool foundTarget = false;
+        while (!foundTarget)
+        {
+            int index = Random.Range(0, 3);
+            if (_charactersSideA[index]._currentHP > 0)
+            {
+                target = _charactersSideA[index];
+                foundTarget = true;
+            }
+        }
+        ApplySkillOnTarget(target);
+        return target;
     }
 
     private string CalculateAndApplyDamage(Character target)

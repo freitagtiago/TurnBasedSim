@@ -38,10 +38,14 @@ MonoBehaviour:
   - _stat: 8
     _value: 45
   _availableSkills:
-  - {fileID: 11400000, guid: f224707b01c36344c832269d2d9c0c21, type: 2}
   - {fileID: 11400000, guid: f43e07cb3cb468940b800e20af1a18c4, type: 2}
-  - {fileID: 11400000, guid: aff9e1c2eecd4d544bc30e7fbdd05d1e, type: 2}
+  - {fileID: 11400000, guid: c9b8fd9155bbf974c8c00d7fd6c90c4c, type: 2}
   - {fileID: 11400000, guid: 29ae8053adce6324cbfb108e03528062, type: 2}
-  - {fileID: 11400000, guid: a23ad78353abc8d408fcace548b5d8ba, type: 2}
-  _availableItens: []
-  _specialSkill: {fileID: 0}
+  - {fileID: 11400000, guid: c4e66ff3408e21b478032b35af40d5e2, type: 2}
+  - {fileID: 11400000, guid: fc0b50db0b70da74a9c6d4cdfba3abdd, type: 2}
+  - {fileID: 11400000, guid: d94e49d568583084ebeafd0ff10021cb, type: 2}
+  _availableItens:
+  - {fileID: 11400000, guid: 9d1196c13fecdb04a97c3a3a7787db0b, type: 2}
+  - {fileID: 11400000, guid: c6fe079d853c54449a01e4c7aa9a5d88, type: 2}
+  - {fileID: 11400000, guid: 7bcbeada149292046a72830a549dbac1, type: 2}
+  _specialSkill: {fileID: 11400000, guid: 9bcad141eeaa8124392cb91a21e81004, type: 2}

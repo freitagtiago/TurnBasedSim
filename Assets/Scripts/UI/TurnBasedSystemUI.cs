@@ -169,7 +169,7 @@ public class TurnBasedSystemUI : MonoBehaviour
         _skillPanelUI.GetComponent<IPanelUI>().ClosePanel();
         _itenPanelUI.GetComponent<IPanelUI>().ClosePanel();
         _specialPanelUI.GetComponent<IPanelUI>().ClosePanel();
-        TurnBasedSystem.Instance.EndBattle();
+        StartCoroutine(TurnBasedSystem.Instance.EndBattle());
     }
 
     public void UpdateActionPointsUI()
