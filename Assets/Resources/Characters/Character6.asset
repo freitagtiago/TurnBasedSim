@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 402f96b44e0210744994e881f4f75adb, type: 3}
+  m_Name: Character6
+  m_EditorClassIdentifier: 
+  _name: Zephyr
+  _description: "Zephyr \xE9 uma figura sombria e misteriosa, com cabelos negros
+    como a noite e olhos profundos que parecem absorver a luz, cuja presen\xE7a envolta
+    em sombras e habilidades de manipula\xE7\xE3o das trevas revelam um poder silencioso
+    e impenetr\xE1vel, t\xE3o intrigante quanto amea\xE7ador."
+  _portrait: {fileID: -1088436187, guid: 04020404e1fb18a4b96fd136dc788449, type: 3}
+  _animatorOverride: {fileID: 0}
+  _type: 7
+  _equipment: {fileID: 11400000, guid: 953de82dbc7e8cc4b92c7dd254d77c5a, type: 2}
+  _stats:
+  - _stat: 0
+    _value: 430
+  - _stat: 1
+    _value: 105
+  - _stat: 2
+    _value: 40
+  - _stat: 3
+    _value: 60
+  - _stat: 4
+    _value: 28
+  - _stat: 5
+    _value: 30
+  - _stat: 6
+    _value: 70
+  - _stat: 7
+    _value: 50
+  - _stat: 8
+    _value: 45
+  _availableSkills:
+  - {fileID: 11400000, guid: 8835bdfc634d12840b65517cfffee3a8, type: 2}
+  - {fileID: 11400000, guid: 09f259f5c0ec4e34fa28df608ad932f6, type: 2}
+  - {fileID: 11400000, guid: 6e531c5fbbd2cf048a3f28e1409e9bd2, type: 2}
+  - {fileID: 11400000, guid: d94e49d568583084ebeafd0ff10021cb, type: 2}
+  - {fileID: 11400000, guid: 93f7240404274de439e889e7692b67c3, type: 2}
+  - {fileID: 11400000, guid: 3b9e88d0c7a12a046b21a8167efbd641, type: 2}
+  - {fileID: 11400000, guid: f88888462efb36943893760a725ce74a, type: 2}
+  - {fileID: 11400000, guid: 50bbfa7ccb280a8488b2f4320bd06b30, type: 2}
+  - {fileID: 11400000, guid: 9e7db346a2eb2284f889408d77052edc, type: 2}
+  - {fileID: 11400000, guid: 630c8e41a1dd825469352d4603a64199, type: 2}
+  - {fileID: 11400000, guid: c7efb35d47dbcd54ba25a28743a48e1c, type: 2}
+  - {fileID: 11400000, guid: c4e66ff3408e21b478032b35af40d5e2, type: 2}
+  - {fileID: 11400000, guid: 5e37779b2dc4ba54980df15f02e9d8b7, type: 2}
+  - {fileID: 11400000, guid: 0fbd42bb5e19ae640bd2aea91e245608, type: 2}
+  - {fileID: 11400000, guid: a23ad78353abc8d408fcace548b5d8ba, type: 2}
+  _availableItens:
+  - {fileID: 11400000, guid: 9d1196c13fecdb04a97c3a3a7787db0b, type: 2}
+  - {fileID: 11400000, guid: c6fe079d853c54449a01e4c7aa9a5d88, type: 2}
+  - {fileID: 11400000, guid: 7bcbeada149292046a72830a549dbac1, type: 2}
+  _specialSkill: {fileID: 11400000, guid: 9bcad141eeaa8124392cb91a21e81004, type: 2}

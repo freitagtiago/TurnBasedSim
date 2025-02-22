@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7096666d2f043a54d8499ce0f47d3268, type: 3}
+  m_Name: Luz Estranha
+  m_EditorClassIdentifier: 
+  _name: Confuse
+  _description: "Um raio de luz misterioso que afeta a consci\xEAncia do alvo, deixando-o
+    confuso. Se confuso, o alvo pode causar danos a si mesmo."
+  _type: 5
+  _cost: 15
+  _accuracy: 75
+  _baseForce: 0
+  _affectAll: 0
+  _isBasicSkill: 0
+  _causeStatusCondition: 0
+  _statusCondition: 5
+  _statusConditionChance: 75
+  _applyStatModifier: 0
+  _statDebuff: 0
+  _modifierChance: 0
+  _statModifier:
+    _stat: 0
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []
+  _minimumTurnCount: 1
+  _maximumTurnCount: 3

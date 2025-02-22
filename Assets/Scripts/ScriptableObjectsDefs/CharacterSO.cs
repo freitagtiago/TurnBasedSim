@@ -6,6 +6,7 @@ using UnityEngine;
 public class CharacterSO : ScriptableObject
 {
     public string _name;
+    [TextArea]
     public string _description;
 
     public Sprite _portrait;

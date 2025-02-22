@@ -5,6 +5,7 @@ using UnityEngine;
 public class EquipmentSO : ScriptableObject
 {
     public string _name;
+    [TextArea]
     public string _description;
     public List<StatModifier> _statModifier = new List<StatModifier>();
     public WeaponDamageType _weaponDamageType;

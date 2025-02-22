@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e6e1462bc0083944bb68b22ad2ce5ec, type: 3}
+  m_Name: "Ataque B\xE1sico"
+  m_EditorClassIdentifier: 
+  _name: "Ataque B\xE1sico"
+  _description: "Ataque b\xE1sico realizado com a arma que o personagem possui em
+    m\xE3os. Normalmente \xE9 um ataque mais fraco."
+  _type: 0
+  _cost: 0
+  _accuracy: 100
+  _baseForce: 30
+  _affectAll: 0
+  _isBasicSkill: 0
+  _causeStatusCondition: 0
+  _statusCondition: 0
+  _statusConditionChance: 0
+  _applyStatModifier: 0
+  _statDebuff: 0
+  _modifierChance: 0
+  _statModifier:
+    _stat: 0
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 0
+    _modifierFactor: 0
+    _minumumTurns: 2
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []

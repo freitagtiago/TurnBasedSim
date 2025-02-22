@@ -1,15 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
-using Unity.Mathematics;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.VersionControl;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
-using static UnityEngine.GraphicsBuffer;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class TurnBasedSystem : MonoBehaviour
@@ -80,23 +74,9 @@ public class TurnBasedSystem : MonoBehaviour
         }
     }
 
-    public void LoadCharacters()
+    private void Start()
     {
-        for(int i = 0; i < _charactersSideASO.Length; i++)
-        {
-            Character character = new Character();
-            character.SetupCharacter(_charactersSideASO[i], 0);
-            _charactersSideA[i] = character;
-            _battleUI.SetupCharacterSlot(_charactersSideA[i], i, 0);
-        }
-
-        for (int i = 0; i < _charactersSideBSO.Length; i++)
-        {
-            Character character = new Character();
-            character.SetupCharacter(_charactersSideBSO[i], 1);
-            _charactersSideB[i] = character;
-            _battleUI.SetupCharacterSlot(_charactersSideB[i], i, 1);
-        }
+        StartBattle();
     }
 
     public void StartBattle()
@@ -109,9 +89,43 @@ public class TurnBasedSystem : MonoBehaviour
         _startButton.SetActive(false);
         _battleUI.UpdateActionPointsUI();
 
-        LoadCharacters();
+        SetupTeams();
         DefineOrder();
-        StartCoroutine(AdvanceTurn());
+
+        string initialSide = _actionOrder[0]._side == 0 ? "esquerdo" : "direito";
+        _battleUI.SetupDialoguePanel($"A batalha irá iniciar. O lado {initialSide} é o primeiro a atacar.", () => { StartCoroutine(AdvanceTurn()); });
+    }
+
+    private void SetupTeams()
+    {
+        _charactersSideA = SelectionUIHandler._selectedCharacters;
+        
+        for (int i = 0; i < 4; i++)
+        {
+            _charactersSideASO[i] = _charactersSideA[i]._baseCharacter;
+        }
+
+        _charactersSideB = SelectionUIHandler._enemyCharacters;
+
+        for (int i = 0; i < 4; i++)
+        {
+            _charactersSideBSO[i] = _charactersSideB[i]._baseCharacter;
+        }
+
+        LoadCharacters();
+    }
+
+    public void LoadCharacters()
+    {
+        for(int i = 0; i < _charactersSideA.Length; i++)
+        {
+            _battleUI.SetupCharacterSlot(_charactersSideA[i], i, 0);
+        }
+
+        for (int i = 0; i < _charactersSideB.Length; i++)
+        {
+            _battleUI.SetupCharacterSlot(_charactersSideB[i], i, 1);
+        }
     }
 
     public bool CheckCondition()
@@ -170,8 +184,9 @@ public class TurnBasedSystem : MonoBehaviour
         _onBattle = false;
         _charactersSideA = new Character[4];
         _charactersSideB = new Character[4];
-        _startButton.SetActive(true);
+        //_startButton.SetActive(true);
         _battleUI.EndBattle();
+        SceneManager.LoadScene(0);
     }
 
     public IEnumerator AdvanceTurn()

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56b5b5fa2fc79424293a5bf83bb85fcb, type: 3}
+  m_Name: "Ascen\xE7\xE3o da Alma"
+  m_EditorClassIdentifier: 
+  _name: "Ascen\xE7\xE3o das Almas"
+  _description: "Esp\xEDritos de antepassados ascendem do campo de batalha at\xE9
+    os c\xE9us. O alvo tem grandes chances de ficar confuso."
+  _type: 8
+  _cost: 10
+  _accuracy: 85
+  _baseForce: 45
+  _affectAll: 0
+  _isBasicSkill: 0
+  _causeStatusCondition: 1
+  _statusCondition: 5
+  _statusConditionChance: 25
+  _applyStatModifier: 1
+  _statDebuff: 3
+  _modifierChance: 10
+  _statModifier:
+    _stat: 3
+    _value: 0
+    _isPermanent: 0
+    _remainingTurns: 0
+    _stage: 1
+    _modifierFactor: -1
+    _minumumTurns: 3
+    _maximumTurns: 6
+  _isSpecialSkill: 0
+  _restoreHPFactor: 0
+  _removeDebuff: 0
+  _cureAllStatusConditions: 0
+  _modifiersToAdd: []

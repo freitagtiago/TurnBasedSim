@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Progress;
 
 [System.Serializable]
 public class Character
@@ -38,8 +37,7 @@ public class Character
         _description = baseCharacter._description;
         _type = baseCharacter._type;
         _stats = _baseCharacter._stats;
-        _skillList = baseCharacter._availableSkills;
-        _itemsList = baseCharacter._availableItens;
+
         _equipment = baseCharacter._equipment;
 
         _side = side;
