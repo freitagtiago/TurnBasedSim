@@ -22,8 +22,8 @@ public class Character
     [SerializeField] public List<StatModifier> _statsModifiers { get; private set; } = new List<StatModifier>();
     [SerializeField] public List<Stat> _stats { get; private set; } = new List<Stat>();
 
-    [SerializeField] public List<SkillSO> _skillList { get; private set; } = new List<SkillSO>();
-    [SerializeField] public List<ItemSO> _itemsList { get; private set; } = new List<ItemSO>();
+    [SerializeField] public List<SkillSO> _skillList = new List<SkillSO>();
+    [SerializeField] public List<ItemSO> _itemsList = new List<ItemSO>();
 
     public int _side = 0;
     public bool _inDefensiveState = false;

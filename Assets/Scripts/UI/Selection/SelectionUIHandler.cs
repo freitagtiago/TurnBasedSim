@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -344,7 +345,9 @@ public class SelectionUIHandler : MonoBehaviour
         {
             if (SelectEnemyTeam())
             {
-                SceneManager.LoadScene(1);
+                GenerateAndSaveBattleChars();
+
+                SceneManager.LoadScene("Lobby");
             }
         }
         else
@@ -429,5 +432,21 @@ public class SelectionUIHandler : MonoBehaviour
             }
         }
         return true;
+    }
+
+    private void GenerateAndSaveBattleChars()
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            BattleCharacter battleChar = new BattleCharacter();
+            battleChar._baseCharacterSOName = _selectedCharacters[i]._baseCharacter.name;
+            battleChar._skillList = _selectedCharacters[i]._skillList;
+            battleChar._itemsList = _selectedCharacters[i]._itemsList;
+
+            string json = JsonConvert.SerializeObject(battleChar);
+
+            PlayerPrefs.SetString("partymember" + i, json);
+            PlayerPrefs.Save();
+        }
     }
 }

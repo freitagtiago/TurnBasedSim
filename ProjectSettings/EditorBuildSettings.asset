@@ -6,9 +6,21 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 099768377f0f6ea4b9ff2130539c0fcf
+  - enabled: 1
     path: Assets/Scenes/TeamSelection.unity
     guid: c75cf74ebe4c3cf4c85518a65f6a9b67
   - enabled: 1
     path: Assets/Scenes/OfflineBattle.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/GameplayScene.unity
+    guid: 0eecef90ba5c3c747b809281088b3403
+  - enabled: 1
+    path: Assets/Scenes/GameRoom.unity
+    guid: 8ba190a0190f49b4a806f44c41178234
+  - enabled: 1
+    path: Assets/Scenes/OfflineScene.unity
+    guid: 786fcc11c77790d4fa8facbf211c235d
   m_configObjects: {}

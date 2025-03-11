@@ -40,8 +40,6 @@ public class TurnBasedSystemUI : MonoBehaviour
             _charactersSideBUI[index] = Instantiate(_characterUIPrefab, _sideB);
             _charactersSideBUI[index].Setup(character);
         }
-
-        
     }
     
     public void EndBattle()
